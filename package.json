@@ -1,0 +1,55 @@
+{
+  "name": "chorui",
+  "version": "1.0.0",
+  "description": "IDE for Pakhi programming language",
+  "main": "main.js",
+  "scripts": {
+    "pre-process": "./node_modules/.bin/esbuild renderer.jsx --bundle --outfile=out.js",
+    "start": "npm run pre-process && electron-forge start",
+    "package": "npm run pre-process && electron-forge package",
+    "make": "npm run pre-process && electron-forge make"
+  },
+  "author": "Shafin Ashraf",
+  "license": "ISC",
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.57",
+    "@electron-forge/maker-deb": "^6.0.0-beta.57",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.57",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
+    "@electron-forge/maker-zip": "^6.0.0-beta.57",
+    "electron": "^13.0.1"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0",
+    "esbuild": "^0.12.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "chorui"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  }
+}
