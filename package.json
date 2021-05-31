@@ -4,7 +4,7 @@
   "description": "IDE for Pakhi programming language",
   "main": "main.js",
   "scripts": {
-    "pre-process": "./node_modules/.bin/esbuild renderer.jsx --bundle --outfile=out.js",
+    "pre-process": "./node_modules/.bin/esbuild main_window.jsx --bundle --outfile=out.js",
     "start": "npm run pre-process && electron-forge start",
     "package": "npm run pre-process && electron-forge package",
     "make": "npm run pre-process && electron-forge make"
