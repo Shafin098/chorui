@@ -6,6 +6,7 @@ const lineStyle = {
     display: "flex", 
     flexDirection: "row",
     alignItems: "center",
+    whiteSpace: "nowrap"
 }
 
 const lineNumberStyle = {
@@ -19,14 +20,15 @@ const lineNumberStyle = {
 function Line(props) {
     return (
         <div style={lineStyle}>
-            <div style={lineNumberStyle}>{props.lineNumber}</div>
-            <div contentEditable={true}
-                    onChange={(e) => {
-                        console.log(e.target.value)
-                        console.log(props)
-                        props.handleChange(e.target.value, props.lineNumber)
-                    }}>
-                {props.txt}
+            <div style={lineNumberStyle}>{props.lineNumber + 1}</div>
+            <div 
+                dangerouslySetInnerHTML={{__html: props.txt}}
+                contentEditable={true}
+                onChange={(e) => {
+                    //console.log(e)
+                    props.handleChange(e.target.value, props.lineNumber)}
+                }
+                onKeyPress={(e) => props.handleKeyPress(e, props.lineNumber)}>
             </div>
         </div>
     )
