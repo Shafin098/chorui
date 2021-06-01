@@ -15,11 +15,19 @@ const lineNumberStyle = {
     marginRight: "0.4rem"
 }
 
+
 function Line(props) {
     return (
         <div style={lineStyle}>
-            <div style={lineNumberStyle}>{props.number}</div>
-            <div contentEditable={true}>{props.txt}</div>
+            <div style={lineNumberStyle}>{props.lineNumber}</div>
+            <div contentEditable={true}
+                    onChange={(e) => {
+                        console.log(e.target.value)
+                        console.log(props)
+                        props.handleChange(e.target.value, props.lineNumber)
+                    }}>
+                {props.txt}
+            </div>
         </div>
     )
 }

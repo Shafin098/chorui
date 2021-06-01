@@ -1,13 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Line from './line'
-
-const lines = [
-    "this is a test 1",
-    "this is a test 2",
-    "this is a test 3",
-    "this is a test 4",
-    "this is a test 5",
-]
 
 const editorStyle = {
     width: "100%",
@@ -15,7 +7,23 @@ const editorStyle = {
 }
 
 function Editor() {
-    const lineComponents = lines.map((line, index) => <Line key={index} txt={line} number={index}/>)
+    const [lines, setLines] = useState([
+        "this is a test 1",
+        "this is a test 2",
+        "this is a test 3",
+        "this is a test 4",
+        "this is a test 5"
+    ])
+
+    const handleTextChange = (newText, lineNumber) => {
+        lines[lineNumber] = newText
+        console.log('updated lines: ', lines)
+        setLines([...lines])
+    }
+
+    const lineComponents = lines.map((line, index) => {
+            return <Line key={`${index}${line}`} txt={line} lineNumber={index} handleChange={handleTextChange}/>
+    })
     return (
         <div style={editorStyle}>
             {lineComponents}
