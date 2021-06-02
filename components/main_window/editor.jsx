@@ -24,16 +24,21 @@ function Editor() {
 
     // When enter key is pressed creates a new line
     const handleEnterPress = (text, lineIndex) => {
-        //console.log(text, lineIndex)
         text = text.replace("&nbsp;", "")
+        text = text.replace("<div>", "")
         text = text.replace("</div>", "")
         text = text.replace("<br>", "")
 
-        const splits = text.split("<div>")
-        lines[lineIndex].text = splits[0]
-        lines.splice(lineIndex + 1, 0, {text: splits[1], active: true})
+        // splitting line two part at caret position
+        const caretPosition = window.getSelection().anchorOffset
+        const firstPartOfLine = text.substring(0, caretPosition)
+        const seconfPartOfLine = text.substring(caretPosition, text.length)
+        // current line will now contain only first part
+        lines[lineIndex].text = firstPartOfLine
+        // creating new line with lines second part
+        lines.splice(lineIndex + 1, 0, {text: seconfPartOfLine, active: true})
         lines[lineIndex].active = false
-        //console.log(lines)
+
         setLines([...lines])
     }
 
@@ -57,7 +62,7 @@ function Editor() {
     const handleKeyPress = (e, lineIndex) => {
         switch (e.key) {
             case "Enter":
-                setTimeout(() => handleEnterPress(e.target.innerHTML, lineIndex), 0)
+                handleEnterPress(e.target.innerHTML, lineIndex)
                 break
             case "Backspace":
                 handleBackSpacePress(lineIndex)
