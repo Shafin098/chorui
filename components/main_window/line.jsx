@@ -19,11 +19,12 @@ const lineNumberStyle = {
 
 function Line(props) {
     const lineDivRef = useRef()
+
     useEffect(() => {
-        console.log("in useEffect")
-        console.log(props)
+        //console.log("in useEffect")
+        //console.log(props)
         if (props.active) {
-            console.log("focus called")
+            //console.log("focus called")
             lineDivRef.current.focus()
         } 
     })
@@ -40,7 +41,7 @@ function Line(props) {
                     //console.log(e)
                     props.handleChange(e.target.value, props.lineNumber)}
                 }
-                onKeyPress={(e) => props.handleKeyPress(e, props.lineNumber)}>
+                onKeyDown={(e) => props.handleKeyPress(e, props.lineNumber)}>
             </div>
         </div>
     )

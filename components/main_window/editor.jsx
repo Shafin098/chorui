@@ -22,8 +22,9 @@ function Editor() {
         setLines([...lines])
     }
 
+    // When enter key is pressed creates a new line
     const handleEnterPress = (text, lineIndex) => {
-        console.log(text, lineIndex)
+        //console.log(text, lineIndex)
         text = text.replace("&nbsp;", "")
         text = text.replace("</div>", "")
         text = text.replace("<br>", "")
@@ -32,13 +33,36 @@ function Editor() {
         lines[lineIndex].text = splits[0]
         lines.splice(lineIndex + 1, 0, {text: splits[1], active: true})
         lines[lineIndex].active = false
-        console.log(lines)
+        //console.log(lines)
         setLines([...lines])
     }
 
-    const handleKeyPress = (e, lineNumber) => {
-        if (e.key === "Enter") {
-            setTimeout(() => handleEnterPress(e.target.innerHTML, lineNumber), 0)
+    // Deletes a line if backspace is pressed at the start of a line
+    const handleBackSpacePress = (lineIndex) => {
+        const caretPosition = window.getSelection().anchorOffset
+        // caret is at the start of the line and backspace pressed
+        // so, needs to delete this line
+        if (caretPosition == 0) {
+            // filtering out backspaced line
+            const filteredLines = lines.filter((_, currentIndex) => {
+                return currentIndex != lineIndex
+            })
+            const mergedLines =  `${filteredLines[lineIndex-1].text}${lines[lineIndex].text}`
+            filteredLines[lineIndex-1] = {text: mergedLines, active: true}
+            console.log(filteredLines)
+            setLines(filteredLines)
+        }
+    }
+
+    const handleKeyPress = (e, lineIndex) => {
+        switch (e.key) {
+            case "Enter":
+                setTimeout(() => handleEnterPress(e.target.innerHTML, lineIndex), 0)
+                break
+            case "Backspace":
+                handleBackSpacePress(lineIndex)
+            default:
+                console.log(e.key)
         }
     }
 
