@@ -21,27 +21,37 @@ function Line(props) {
     const lineDivRef = useRef()
 
     useEffect(() => {
-        //console.log("in useEffect")
-        //console.log(props)
         if (props.active) {
-            //console.log("focus called")
+            console.log(props.txt.length, props.caretPosition)
             lineDivRef.current.focus()
+            if (props.caretPosition > 0) {
+                // setting caret position properly
+                const range = document.createRange()
+                //console.log(lineDivRef.current.childNodes)
+                range.setStart(lineDivRef.current.childNodes[0], props.caretPosition)
+                range.collapse(true)
+                const selection = window.getSelection()
+                selection.removeAllRanges()
+                selection.addRange(range)
+            }
         } 
+
     })
 
     return (
         <div style={lineStyle}>
-            <div style={lineNumberStyle}>{props.lineNumber + 1}</div>
+            <div style={lineNumberStyle}>{props.lineIndex + 1}</div>
             <div 
                 style={{minWidth: "10%"}}
                 ref={lineDivRef}
                 dangerouslySetInnerHTML={{__html: props.txt}}
                 contentEditable={true}
-                onChange={(e) => {
-                    //console.log(e)
-                    props.handleChange(e.target.value, props.lineNumber)}
-                }
-                onKeyDown={(e) => props.handleKeyPress(e, props.lineNumber)}>
+                onClick={(e) => props.handleOnClick(props.lineIndex)}
+                onInput={(e) => {
+                    console.log("calling change")
+                    props.handleChange(e.target.innerText, props)
+                }}
+                onKeyDown={(e) => props.handleKeyPress(e, props.lineIndex)}>
             </div>
         </div>
     )

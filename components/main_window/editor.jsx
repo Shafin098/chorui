@@ -9,15 +9,20 @@ const editorStyle = {
 
 function Editor() {
     const [lines, setLines] = useState([
-        {text: "this is a test 1", active: false},
-        {text: "this is a test 2", active: false},
-        {text: "this is a test 3", active: false},
-        {text: "this is a test 4", active: false},
-        {text: "this is a test 5", active: false}
+        {text: "this is a test 1", active: true, caretPosition: 0},
+        {text: "this is a test 2", active: false, caretPosition: 0},
+        {text: "this is a test 3", active: false, caretPosition: 0},
+        {text: "this is a test 4", active: false, caretPosition: 0},
+        {text: "this is a test 5", active: false, caretPosition: 0}
     ])
 
-    const handleTextChange = (newText, lineNumber) => {
-        lines[lineNumber] = newText
+    const handleTextChange = (newText, {txt, active, lineIndex}) => {
+        console.log(lines)
+        console.log(newText)
+        lines[lineIndex].text =  newText
+        lines[lineIndex].active = active
+        lines[lineIndex].caretPosition = window.getSelection().anchorOffset
+        console.log(lines)
         //console.log('updated lines: ', lines)
         setLines([...lines])
     }
@@ -35,33 +40,42 @@ function Editor() {
         const seconfPartOfLine = text.substring(caretPosition, text.length)
         // current line will now contain only first part
         lines[lineIndex].text = firstPartOfLine
-        // creating new line with lines second part
-        lines.splice(lineIndex + 1, 0, {text: seconfPartOfLine, active: true})
         lines[lineIndex].active = false
+        lines[lineIndex].caretPosition = firstPartOfLine.length
+        // creating new line with lines second part
+        const newLine = {text: seconfPartOfLine, active: true, caretPosition: 0}
+        lines.splice(lineIndex + 1, 0, newLine)
 
         setLines([...lines])
+        console.log(lines)
     }
 
     // Deletes a line if backspace is pressed at the start of a line
     const handleBackSpacePress = (lineIndex) => {
-        // first line shouldn't be backspacable
-        if (lineIndex == 0) {
-            return
+        let updatedLines = lines
+        // first line shouldn't be backspace-able
+        if (lineIndex !== 0) {
+            const caretPosition = window.getSelection().anchorOffset
+            // caret is at the start of the line and backspace pressed
+            // so, needs to delete this line
+            if (caretPosition == 0) {
+                // filtering out backspaced line
+                const filteredLines = lines.filter((_, currentIndex) => {
+                    return currentIndex != lineIndex
+                })
+                const mergedLineText =  `${filteredLines[lineIndex-1].text}${lines[lineIndex].text}`
+                const newMergedLine = {
+                    text: mergedLineText, 
+                    active: true, 
+                    caretPosition: lines[lineIndex-1].text.length
+                }
+                filteredLines[lineIndex-1] =  newMergedLine
+                //console.log(filteredLines)
+                updatedLines = filteredLines
+            }
         }
-
-        const caretPosition = window.getSelection().anchorOffset
-        // caret is at the start of the line and backspace pressed
-        // so, needs to delete this line
-        if (caretPosition == 0) {
-            // filtering out backspaced line
-            const filteredLines = lines.filter((_, currentIndex) => {
-                return currentIndex != lineIndex
-            })
-            const mergedLines =  `${filteredLines[lineIndex-1].text}${lines[lineIndex].text}`
-            filteredLines[lineIndex-1] = {text: mergedLines, active: true}
-            console.log(filteredLines)
-            setLines(filteredLines)
-        }
+        setLines(updatedLines)
+        console.log(updatedLines)
     }
 
     const handleKeyPress = (e, lineIndex) => {
@@ -72,17 +86,32 @@ function Editor() {
             case "Backspace":
                 handleBackSpacePress(lineIndex)
             default:
-                console.log(e.key)
+                //console.log(e.key)
         }
+    }
+
+    const handleOnClick = (lineIndex) => {
+        const updatedLines = lines.map((line, index) => {
+            if (index === lineIndex) {
+                return {...line, active: true, 
+                        caretPosition: window.getSelection().anchorOffset}
+            } else {
+                return {...line, active: false}
+            }
+        })
+        console.log(updatedLines)
+        setLines(updatedLines)
     }
 
     const lineComponents = lines.map((line, index) => {
             return <Line key={`${index}${line.text}`} 
                         active={line.active}
                         txt={line.text}
-                        lineNumber={index} 
+                        caretPosition={line.caretPosition}
+                        lineIndex={index} 
                         handleChange={handleTextChange}
-                        handleKeyPress={handleKeyPress}/>
+                        handleKeyPress={handleKeyPress}
+                        handleOnClick={handleOnClick}/>
     })
     return (
         <div style={editorStyle}>
