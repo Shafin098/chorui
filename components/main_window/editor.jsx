@@ -44,6 +44,11 @@ function Editor() {
 
     // Deletes a line if backspace is pressed at the start of a line
     const handleBackSpacePress = (lineIndex) => {
+        // first line shouldn't be backspacable
+        if (lineIndex == 0) {
+            return
+        }
+
         const caretPosition = window.getSelection().anchorOffset
         // caret is at the start of the line and backspace pressed
         // so, needs to delete this line
