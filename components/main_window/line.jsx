@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 
 const lineStyle = {
     width:"100%", 
@@ -18,10 +18,22 @@ const lineNumberStyle = {
 
 
 function Line(props) {
+    const lineDivRef = useRef()
+    useEffect(() => {
+        console.log("in useEffect")
+        console.log(props)
+        if (props.active) {
+            console.log("focus called")
+            lineDivRef.current.focus()
+        } 
+    })
+
     return (
         <div style={lineStyle}>
             <div style={lineNumberStyle}>{props.lineNumber + 1}</div>
             <div 
+                style={{minWidth: "10%"}}
+                ref={lineDivRef}
                 dangerouslySetInnerHTML={{__html: props.txt}}
                 contentEditable={true}
                 onChange={(e) => {

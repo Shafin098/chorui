@@ -9,11 +9,11 @@ const editorStyle = {
 
 function Editor() {
     const [lines, setLines] = useState([
-        "this is a test 1",
-        "this is a test 2",
-        "this is a test 3",
-        "this is a test 4",
-        "this is a test 5"
+        {text: "this is a test 1", active: false},
+        {text: "this is a test 2", active: false},
+        {text: "this is a test 3", active: false},
+        {text: "this is a test 4", active: false},
+        {text: "this is a test 5", active: false}
     ])
 
     const handleTextChange = (newText, lineNumber) => {
@@ -27,9 +27,11 @@ function Editor() {
         text = text.replace("&nbsp;", "")
         text = text.replace("</div>", "")
         text = text.replace("<br>", "")
+
         const splits = text.split("<div>")
-        lines[lineIndex] = splits[0]
-        lines.splice(lineIndex + 1, 0, splits[1])
+        lines[lineIndex].text = splits[0]
+        lines.splice(lineIndex + 1, 0, {text: splits[1], active: true})
+        lines[lineIndex].active = false
         console.log(lines)
         setLines([...lines])
     }
@@ -41,8 +43,9 @@ function Editor() {
     }
 
     const lineComponents = lines.map((line, index) => {
-            return <Line key={`${index}${line}`} 
-                        txt={line}
+            return <Line key={`${index}${line.text}`} 
+                        active={line.active}
+                        txt={line.text}
                         lineNumber={index} 
                         handleChange={handleTextChange}
                         handleKeyPress={handleKeyPress}/>
