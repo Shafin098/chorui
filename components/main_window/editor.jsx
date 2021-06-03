@@ -16,7 +16,7 @@ function Editor() {
         {text: "this is a test 5", active: false, caretPosition: 0}
     ])
 
-    const handleTextChange = (newText, {txt, active, lineIndex}) => {
+    const handleTextChange = (newText, {active, lineIndex}) => {
         console.log(lines)
         console.log(newText)
         lines[lineIndex].text =  newText
@@ -104,7 +104,7 @@ function Editor() {
     }
 
     const lineComponents = lines.map((line, index) => {
-            return <Line key={`${index}${line.text}`} 
+            return <Line key={line.text} 
                         active={line.active}
                         txt={line.text}
                         caretPosition={line.caretPosition}
