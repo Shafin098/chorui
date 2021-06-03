@@ -98,6 +98,26 @@ function Editor() {
     }
   };
 
+  const handleArrowUpPress = (lineIndex) => {
+    if (lineIndex > 0) {
+      lines[lineIndex].active = false;
+      lines[lineIndex - 1].active = true;
+      lines[lineIndex - 1].caretPosition = lines[lineIndex].caretPosition;
+      lines[lineIndex].caretPosition = 0;
+    }
+    setLines([...lines]);
+  };
+
+  const handleArrowDownPress = (lineIndex) => {
+    if (lineIndex < lines.length - 1) {
+      lines[lineIndex].active = false;
+      lines[lineIndex + 1].active = true;
+      lines[lineIndex + 1].caretPosition = lines[lineIndex].caretPosition;
+      lines[lineIndex].caretPosition = 0;
+    }
+    setLines([...lines]);
+  };
+
   const handleKeyPress = (e, lineIndex) => {
     switch (e.key) {
       case "Enter":
@@ -112,6 +132,13 @@ function Editor() {
       case "ArrowLeft":
         handleArrowLeftPress(lineIndex);
         break;
+      case "ArrowUp":
+        handleArrowUpPress(lineIndex);
+        break;
+      case "ArrowDown":
+        handleArrowDownPress(lineIndex);
+        break;
+
       default:
         console.log(e.key);
     }
