@@ -9,7 +9,7 @@ const editorStyle = {
 
 function Editor() {
   const [lines, setLines] = useState([
-    { text: "this is a test 1", active: true, caretPosition: 0 },
+    { text: "this is    a test 1", active: true, caretPosition: 0 },
     { text: "this is a test 2", active: false, caretPosition: 0 },
     { text: "this is a test 3", active: false, caretPosition: 0 },
     { text: "this is a test 4", active: false, caretPosition: 0 },
@@ -17,33 +17,42 @@ function Editor() {
   ]);
 
   const handleTextChange = (newText, { active, lineIndex }) => {
-    console.log(lines);
-    console.log(newText);
+    //newText = newText.replaceAll("\n", "");
+    //newText = newText.replaceAll("<div>", "");
+    //newText = newText.replaceAll("</div>", "");
+    //newText = newText.replaceAll("<br>", "");
+    //console.log(lines);
+
     lines[lineIndex].text = newText;
     lines[lineIndex].active = active;
     lines[lineIndex].caretPosition = window.getSelection().anchorOffset;
-    console.log(lines);
+    //console.log(lines);
     //console.log('updated lines: ', lines)
     setLines([...lines]);
   };
 
   // When enter key is pressed creates a new line
   const handleEnterPress = (text, lineIndex) => {
-    text = text.replace("&nbsp;", "");
-    text = text.replace("<div>", "");
-    text = text.replace("</div>", "");
-    text = text.replace("<br>", "");
+    //console.log("----------");
+    //console.log(text);
+    //text = text.replaceAll("&nbsp;", "");
+    //text = text.replaceAll("<div>", "");
+    //text = text.replaceAll("</div>", "");
+    //text = text.replaceAll("<br>", "");
+    //console.log(text);
+    //console.log("^^^^^^^^^");
 
     // splitting line two part at caret position
     const caretPosition = window.getSelection().anchorOffset;
     const firstPartOfLine = text.substring(0, caretPosition);
-    const seconfPartOfLine = text.substring(caretPosition, text.length);
+    const secondPartOfLine = text.substring(caretPosition, text.length);
+    console.log("second: " + secondPartOfLine);
     // current line will now contain only first part
     lines[lineIndex].text = firstPartOfLine;
     lines[lineIndex].active = false;
     lines[lineIndex].caretPosition = firstPartOfLine.length;
     // creating new line with lines second part
-    const newLine = { text: seconfPartOfLine, active: true, caretPosition: 0 };
+    const newLine = { text: secondPartOfLine, active: true, caretPosition: 0 };
     lines.splice(lineIndex + 1, 0, newLine);
 
     setLines([...lines]);
@@ -77,7 +86,7 @@ function Editor() {
       }
     }
     setLines(updatedLines);
-    console.log(updatedLines);
+    //console.log(updatedLines);
   };
 
   const handleArrowRightPress = (lineIndex) => {
@@ -121,6 +130,7 @@ function Editor() {
   const handleKeyPress = (e, lineIndex) => {
     switch (e.key) {
       case "Enter":
+        e.preventDefault();
         handleEnterPress(e.target.innerHTML, lineIndex);
         break;
       case "Backspace":
@@ -163,7 +173,7 @@ function Editor() {
   const lineComponents = lines.map((line, index) => {
     return (
       <Line
-        key={line.text}
+        key={`${index}${line}`}
         active={line.active}
         txt={line.text}
         caretPosition={line.caretPosition}
