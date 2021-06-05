@@ -1,45 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import Editor from "./components/main_window/editor";
-
-function Tab(props) {
-  const tabStyle = {
-    background: "#eee",
-    padding: "0.5rem",
-    border: "1px solid #333",
-  };
-
-  if (!props.active) {
-    tabStyle.background = "#fff";
-  }
-
-  return (
-    <div onClick={() => props.changeActiveTab(props.fileName)} style={tabStyle}>
-      {props.fileName}
-    </div>
-  );
-}
-
-const tabsStyle = {
-  overflowX: "scroll",
-  display: "flex",
-  flexDirection: "row",
-};
-
-function Tabs(props) {
-  const tabs = props.tabs.map((tab) => {
-    return (
-      <Tab
-        changeActiveTab={props.changeActiveTab}
-        key={tab.fileName}
-        active={tab.active}
-        fileName={tab.fileName}
-      />
-    );
-  });
-
-  return <div style={tabsStyle}>{tabs}</div>;
-}
+import Tabs from "./components/main_window/tabs";
 
 const editorWindowStyle = {
   width: "100%",
