@@ -7,14 +7,8 @@ const editorStyle = {
   overflowX: "scroll",
 };
 
-function Editor() {
-  const [lines, setLines] = useState([
-    { text: "this is    a test 1", active: true, caretPosition: 0 },
-    { text: "this is a test 2", active: false, caretPosition: 0 },
-    { text: "this is a test 3", active: false, caretPosition: 0 },
-    { text: "this is a test 4", active: false, caretPosition: 0 },
-    { text: "this is a test 5", active: false, caretPosition: 0 },
-  ]);
+function Editor(props) {
+  const lines = props.lines;
 
   const handleTextChange = (newText, { active, lineIndex }) => {
     //newText = newText.replaceAll("\n", "");
@@ -28,7 +22,7 @@ function Editor() {
     lines[lineIndex].caretPosition = window.getSelection().anchorOffset;
     //console.log(lines);
     //console.log('updated lines: ', lines)
-    setLines([...lines]);
+    props.updateLines(lines, props.activeFileName);
   };
 
   // When enter key is pressed creates a new line
@@ -55,8 +49,8 @@ function Editor() {
     const newLine = { text: secondPartOfLine, active: true, caretPosition: 0 };
     lines.splice(lineIndex + 1, 0, newLine);
 
-    setLines([...lines]);
-    console.log(lines);
+    props.updateLines(lines, props.activeFileName);
+    //console.log(lines);
   };
 
   // Deletes a line if backspace is pressed at the start of a line
@@ -85,14 +79,14 @@ function Editor() {
         updatedLines = filteredLines;
       }
     }
-    setLines(updatedLines);
+    props.updateLines(updatedLines, props.activeFileName);
     //console.log(updatedLines);
   };
 
   const handleArrowRightPress = (lineIndex) => {
     if (lines[lineIndex].caretPosition != lines[lineIndex].text.length) {
       lines[lineIndex].caretPosition += 1;
-      setLines([...lines]);
+      props.updateLines(lines, props.activeFileName);
       //console.log(lines);
       //console.log(lines[lineIndex]);
     }
@@ -101,7 +95,7 @@ function Editor() {
   const handleArrowLeftPress = (lineIndex) => {
     if (lines[lineIndex].caretPosition != 0) {
       lines[lineIndex].caretPosition -= 1;
-      setLines([...lines]);
+      props.updateLines(lines, props.activeFileName);
       //console.log(lines);
       //console.log(lines[lineIndex]);
     }
@@ -114,7 +108,7 @@ function Editor() {
       lines[lineIndex - 1].caretPosition = lines[lineIndex].caretPosition;
       lines[lineIndex].caretPosition = 0;
     }
-    setLines([...lines]);
+    props.updateLines(lines, props.activeFileName);
   };
 
   const handleArrowDownPress = (lineIndex) => {
@@ -124,7 +118,7 @@ function Editor() {
       lines[lineIndex + 1].caretPosition = lines[lineIndex].caretPosition;
       lines[lineIndex].caretPosition = 0;
     }
-    setLines([...lines]);
+    props.updateLines(lines, props.activeFileName);
   };
 
   const handleKeyPress = (e, lineIndex) => {
@@ -166,8 +160,8 @@ function Editor() {
         return { ...line, active: false };
       }
     });
-    console.log(updatedLines);
-    setLines(updatedLines);
+    //console.log(updatedLines);
+    props.updateLines(updatedLines, props.activeFileName);
   };
 
   const lineComponents = lines.map((line, index) => {
