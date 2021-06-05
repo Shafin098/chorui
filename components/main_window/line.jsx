@@ -26,7 +26,11 @@ function Line(props) {
       // setting caret position properly
       //console.log(lineDivRef.current.childNodes)
       if (lineDivRef.current.childNodes.length > 0) {
-        console.log("dbg: ", lineDivRef.current, props.caretPosition);
+        console.log(
+          "dbg: ",
+          lineDivRef.current.childNodes,
+          props.caretPosition
+        );
         const range = document.createRange();
         range.setStart(lineDivRef.current.childNodes[0], props.caretPosition);
         range.collapse(true);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Line from "./line";
 
 const editorStyle = {
@@ -56,28 +56,33 @@ function Editor(props) {
   // Deletes a line if backspace is pressed at the start of a line
   const handleBackSpacePress = (lineIndex) => {
     let updatedLines = lines;
+    const caretPosition = window.getSelection().anchorOffset;
+    // caret is at the start of the line and backspace pressed
+    // so, needs to delete this line
     // first line shouldn't be backspace-able
-    if (lineIndex !== 0) {
-      const caretPosition = window.getSelection().anchorOffset;
-      // caret is at the start of the line and backspace pressed
-      // so, needs to delete this line
-      if (caretPosition == 0) {
-        // filtering out backspaced line
-        const filteredLines = lines.filter((_, currentIndex) => {
-          return currentIndex != lineIndex;
-        });
-        const mergedLineText = `${filteredLines[lineIndex - 1].text}${
-          lines[lineIndex].text
-        }`;
-        const newMergedLine = {
-          text: mergedLineText,
-          active: true,
-          caretPosition: lines[lineIndex - 1].text.length,
-        };
-        filteredLines[lineIndex - 1] = newMergedLine;
-        //console.log(filteredLines)
-        updatedLines = filteredLines;
+    if (caretPosition == 0 && lineIndex != 0) {
+      // filtering out backspaced line
+      const filteredLines = lines.filter((_, currentIndex) => {
+        return currentIndex != lineIndex;
+      });
+      const mergedLineText = `${filteredLines[lineIndex - 1].text}${
+        lines[lineIndex].text
+      }`;
+      const newMergedLine = {
+        text: mergedLineText,
+        active: true,
+        caretPosition: lines[lineIndex - 1].text.length,
+      };
+      filteredLines[lineIndex - 1] = newMergedLine;
+      //console.log(filteredLines)
+      updatedLines = filteredLines;
+    } else {
+      // don't need to delete line, just update caret position
+      if (updatedLines[lineIndex].caretPosition > 0) {
+        updatedLines[lineIndex].caretPosition -= 1;
       }
+      console.log("caret: ", caretPosition);
+      console.log("elems caret: ", updatedLines[lineIndex].caretPosition);
     }
     props.updateLines(updatedLines, props.activeFileName);
     //console.log(updatedLines);
@@ -142,7 +147,6 @@ function Editor(props) {
       case "ArrowDown":
         handleArrowDownPress(lineIndex);
         break;
-
       default:
         console.log(e.key);
     }

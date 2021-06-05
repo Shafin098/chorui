@@ -88,9 +88,8 @@ function EditorWindow(props) {
         return { ...tab, active: false };
       }
     });
-    console.log("tab clicked");
     setTabs([...updatedTabs]);
-    console.log(updatedTabs);
+    //console.log(updatedTabs);
   };
 
   const activeTab = tabs.filter((tab) => tab.active)[0];
