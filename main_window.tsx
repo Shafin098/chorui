@@ -1,17 +1,24 @@
-import React, { useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import ReactDOM from "react-dom";
 import Editor from "./components/main_window/editor";
 import Tabs from "./components/main_window/tabs";
+import { LineType } from "./components/main_window/line";
 
-const editorWindowStyle = {
+const editorWindowStyle: CSSProperties = {
   width: "100%",
   height: "100%",
   display: "flex",
   flexDirection: "column",
 };
 
-function EditorWindow(props) {
-  const [tabs, setTabs] = useState([
+export type TabType = {
+  fileName: string;
+  active: boolean;
+  lines: LineType[];
+};
+
+function EditorWindow() {
+  const [tabs, setTabs] = useState<TabType[]>([
     {
       fileName: "test1",
       active: true,
@@ -36,13 +43,13 @@ function EditorWindow(props) {
     },
   ]);
 
-  const updateLines = (updatedLines, fileName) => {
+  const updateLines = (updatedLines: LineType[], fileName: string): void => {
     let tab = tabs.filter((tab) => tab.fileName == fileName)[0];
     tab.lines = updatedLines;
     setTabs([...tabs]);
   };
 
-  const changeActiveTab = (fileName) => {
+  const changeActiveTab = (fileName: string) => {
     const updatedTabs = tabs.map((tab) => {
       if (tab.fileName == fileName) {
         return { ...tab, active: true };

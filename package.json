@@ -4,7 +4,8 @@
   "description": "IDE for Pakhi programming language",
   "main": "main.js",
   "scripts": {
-    "pre-process": "./node_modules/.bin/esbuild main_window.jsx --bundle --outfile=out.js",
+    "type-check": "npx tsc --noEmit",
+    "pre-process": "npm run type-check && ./node_modules/.bin/esbuild main_window.jsx --bundle --outfile=out.js",
     "start": "npm run pre-process && electron-forge start",
     "package": "npm run pre-process && electron-forge package",
     "make": "npm run pre-process && electron-forge make"
@@ -17,9 +18,12 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.57",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
     "@electron-forge/maker-zip": "^6.0.0-beta.57",
-    "electron": "^13.0.1"
+    "electron": "^13.0.1",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
+    "@types/react": "^17.0.9",
+    "@types/react-dom": "^17.0.6",
     "electron-squirrel-startup": "^1.0.0",
     "esbuild": "^0.12.5",
     "react": "17.0.2",

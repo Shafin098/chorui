@@ -1,6 +1,12 @@
 import React from "react";
 
-function Tab(props) {
+type TabPropType = {
+  fileName: string;
+  active: boolean;
+  changeActiveTab: (fileName: string) => void;
+};
+
+function Tab(props: TabPropType) {
   const tabStyle = {
     background: "#eee",
     padding: "0.5rem",

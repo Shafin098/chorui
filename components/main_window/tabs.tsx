@@ -1,13 +1,19 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import Tab from "./tab";
+import { TabType } from "../../main_window";
 
-const tabsStyle = {
+const tabsStyle: CSSProperties = {
   overflowX: "scroll",
   display: "flex",
   flexDirection: "row",
 };
 
-function Tabs(props) {
+type TabsPropType = {
+  tabs: TabType[];
+  changeActiveTab: (fileName: string) => void;
+};
+
+function Tabs(props: TabsPropType) {
   const tabs = props.tabs.map((tab) => {
     return (
       <Tab
