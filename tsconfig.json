@@ -3,9 +3,7 @@
     "strict": true,
     "lib": ["DOM", "ESNEXT"],
     "jsx": "react",
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node"
+    "allowSyntheticDefaultImports": true
   },
   "include": ["./**/*"],
   "exclude": ["node_modules"]

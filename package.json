@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "type-check": "npx tsc --noEmit",
-    "pre-process": "npm run type-check && ./node_modules/.bin/esbuild main_window.jsx --bundle --outfile=out.js",
+    "pre-process": "npm run type-check && ./node_modules/.bin/esbuild main_window.tsx --bundle --outfile=out.js",
     "start": "npm run pre-process && electron-forge start",
     "package": "npm run pre-process && electron-forge package",
     "make": "npm run pre-process && electron-forge make"
