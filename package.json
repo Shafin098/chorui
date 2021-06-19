@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "type-check": "npx tsc --noEmit",
-    "pre-process": "npm run type-check && ./node_modules/.bin/esbuild main_window.tsx --bundle --outfile=out.js",
+    "pre-process": "npm run type-check && npx webpack",
     "start": "npm run pre-process && electron-forge start",
     "package": "npm run pre-process && electron-forge package",
     "make": "npm run pre-process && electron-forge make"
@@ -13,13 +13,18 @@
   "author": "Shafin Ashraf",
   "license": "ISC",
   "devDependencies": {
+    "@babel/preset-typescript": "^7.14.5",
     "@electron-forge/cli": "^6.0.0-beta.57",
     "@electron-forge/maker-deb": "^6.0.0-beta.57",
     "@electron-forge/maker-rpm": "^6.0.0-beta.57",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.57",
     "@electron-forge/maker-zip": "^6.0.0-beta.57",
+    "babel-loader": "^8.2.2",
     "electron": "^13.0.1",
-    "typescript": "^4.3.2"
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   },
   "dependencies": {
     "@types/react": "^17.0.9",
