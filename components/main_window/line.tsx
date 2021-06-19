@@ -23,6 +23,7 @@ export type LinePropType = {
   active: boolean;
   caretPosition: number;
   lineIndex: number;
+  padding: number;
   handleOnClick: (lineIndex: number) => void;
   handleChange: (text: string, props: LinePropType) => void;
   handleKeyPress: (
@@ -66,9 +67,14 @@ function Line(props: LinePropType) {
     return htmlString;
   };
 
+  const lineNumber = (props.lineIndex + 1).toString();
+  let pads = "";
+  for (let i = 0; i < props.padding; i++) {
+    pads += " ";
+  }
   return (
     <div style={lineStyle}>
-      <div style={lineNumberStyle}>{props.lineIndex + 1}</div>
+      <pre style={lineNumberStyle}>{`${pads}${lineNumber}`}</pre>
       <pre
         style={{ minWidth: "10%" }}
         ref={lineDivRef}
