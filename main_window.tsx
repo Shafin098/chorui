@@ -1,5 +1,7 @@
+import path from "path";
 import React, { CSSProperties, useState } from "react";
 import ReactDOM from "react-dom";
+import { ipcRenderer } from "electron";
 import Editor from "./components/main_window/editor";
 import Tabs from "./components/main_window/tabs";
 import { LineType } from "./components/main_window/line";
@@ -42,6 +44,30 @@ function EditorWindow() {
       ],
     },
   ]);
+
+  ipcRenderer.on(
+    "new-file",
+    (_: any, fileContent: string, filePath: string) => {
+      const lines = fileContent.split(/\r?\n/).map((line, index) => {
+        if (index == 0) {
+          return { text: line, active: true, caretPosition: 0 };
+        } else {
+          return { text: line, active: false, caretPosition: 0 };
+        }
+      });
+
+      const newTab: TabType = {
+        fileName: path.parse(filePath).base,
+        active: true,
+        lines: lines,
+      };
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].active = false;
+      }
+      tabs.push(newTab);
+      setTabs([...tabs]);
+    }
+  );
 
   const updateLines = (updatedLines: LineType[], fileName: string): void => {
     let tab = tabs.filter((tab) => tab.fileName == fileName)[0];
