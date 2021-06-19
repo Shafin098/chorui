@@ -10,7 +10,8 @@ const tabsStyle: CSSProperties = {
 
 type TabsPropType = {
   tabs: TabType[];
-  changeActiveTab: (fileName: string) => void;
+  changeActiveTab: (filePath: string) => void;
+  closeTab: (filePath: string) => void;
 };
 
 function Tabs(props: TabsPropType) {
@@ -18,6 +19,7 @@ function Tabs(props: TabsPropType) {
     return (
       <Tab
         changeActiveTab={props.changeActiveTab}
+        closeTab={props.closeTab}
         key={tab.fileName}
         active={tab.active}
         fileName={tab.fileName}

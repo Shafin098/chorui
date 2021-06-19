@@ -199,8 +199,8 @@ function Editor(props: EditorPropType) {
     //console.log(updatedLines);
     props.updateLines(updatedLines, props.activeFileName);
   };
+
   const lineComponents = lines.map((line, index) => {
-    //
     const lineNumLeftPadding =
       lines.length.toString().length - (index + 1).toString().length;
     return (
@@ -217,6 +217,7 @@ function Editor(props: EditorPropType) {
       />
     );
   });
+
   return <div style={editorStyle}>{lineComponents}</div>;
 }
 

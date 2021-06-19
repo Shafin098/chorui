@@ -75,9 +75,24 @@ function EditorWindow() {
     setTabs([...tabs]);
   };
 
-  const changeActiveTab = (fileName: string) => {
+  const closeTab = (filePath: string) => {
+    // removing desired tab object from tab array list
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i].fileName == filePath) {
+        tabs.splice(i, 1);
+        break;
+      }
+    }
+    // setting first tab as active tab
+    if (tabs.length > 0) {
+      tabs[0].active = true;
+    }
+    setTabs([...tabs]);
+  };
+
+  const changeActiveTab = (filePath: string) => {
     const updatedTabs = tabs.map((tab) => {
-      if (tab.fileName == fileName) {
+      if (tab.fileName == filePath) {
         return { ...tab, active: true };
       } else {
         return { ...tab, active: false };
@@ -88,17 +103,24 @@ function EditorWindow() {
   };
 
   const activeTab = tabs.filter((tab) => tab.active)[0];
-
-  return (
-    <div style={editorWindowStyle}>
-      <Tabs tabs={tabs} changeActiveTab={changeActiveTab} />
-      <Editor
-        lines={activeTab.lines}
-        activeFileName={activeTab.fileName}
-        updateLines={updateLines}
-      />
-    </div>
-  );
+  if (activeTab == undefined) {
+    return <div>Open a file by pressing Ctrl+O</div>;
+  } else {
+    return (
+      <div style={editorWindowStyle}>
+        <Tabs
+          tabs={tabs}
+          changeActiveTab={changeActiveTab}
+          closeTab={closeTab}
+        />
+        <Editor
+          lines={activeTab.lines}
+          activeFileName={activeTab.fileName}
+          updateLines={updateLines}
+        />
+      </div>
+    );
+  }
 }
 
 ReactDOM.render(<EditorWindow />, document.getElementById("root"));
