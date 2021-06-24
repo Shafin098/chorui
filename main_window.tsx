@@ -28,8 +28,6 @@ function EditorWindow() {
     ipcRenderer.on(
       "new-file",
       (_: any, fileContent: string, filePath: string) => {
-        console.log("in new file");
-        console.log("first", tabs);
         // converting file content to Tab object
         const lines = fileContent.split(/\r?\n/).map((line, index) => {
           // cursor should be on first line, so making first line active
@@ -51,7 +49,6 @@ function EditorWindow() {
         }
         tabs.push(newTab);
         setTabs([...tabs]);
-        console.log("last", tabs);
       }
     );
 
@@ -68,14 +65,17 @@ function EditorWindow() {
             }
           }
           fs.writeFileSync(tab.filePath, concatedLines);
-          console.log("saving file");
-          console.log(tab.filePath);
-          console.log(concatedLines);
           break;
         }
       }
     });
-  }, []);
+
+    // removing all listeners
+    return () => {
+      ipcRenderer.removeAllListeners("new-file");
+      ipcRenderer.removeAllListeners("save-file");
+    };
+  }, [tabs]);
 
   const updateLines = (updatedLines: LineType[], fileName: string): void => {
     let tab = tabs.filter((tab) => tab.filePath == fileName)[0];
@@ -96,7 +96,6 @@ function EditorWindow() {
       tabs[0].active = true;
     }
     setTabs([...tabs]);
-    console.log("closed tab", tabs);
   };
 
   const changeActiveTab = (filePath: string) => {
