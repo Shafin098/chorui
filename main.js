@@ -21,6 +21,11 @@ function createWindow() {
           accelerator: "CommandOrControl+O",
           click: () => openFileDialog(win),
         },
+        {
+          label: "Save",
+          accelerator: "CommandOrControl+S",
+          click: () => emitSaveFileEvent(win),
+        },
       ],
     },
   ]);
@@ -54,4 +59,9 @@ function openFileDialog(browserWin) {
   const filePath = openedFiles[0];
   const fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
   browserWin.webContents.send("new-file", fileContent, filePath);
+}
+
+// Sends save-file event to renderer process
+function emitSaveFileEvent(browserWin) {
+  browserWin.webContents.send("save-file");
 }

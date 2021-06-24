@@ -20,9 +20,9 @@ function Tabs(props: TabsPropType) {
       <Tab
         changeActiveTab={props.changeActiveTab}
         closeTab={props.closeTab}
-        key={tab.fileName}
+        key={tab.filePath}
         active={tab.active}
-        fileName={tab.fileName}
+        filePath={tab.filePath}
       />
     );
   });

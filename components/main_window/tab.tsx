@@ -1,7 +1,8 @@
+import path from "path";
 import React, { CSSProperties } from "react";
 
 type TabPropType = {
-  fileName: string;
+  filePath: string;
   active: boolean;
   changeActiveTab: (filePath: string) => void;
   closeTab: (filePath: string) => void;
@@ -24,11 +25,11 @@ function Tab(props: TabPropType) {
 
   return (
     <div style={tabStyle}>
-      <div onClick={() => props.changeActiveTab(props.fileName)}>
-        {props.fileName}
+      <div onClick={() => props.changeActiveTab(props.filePath)}>
+        {path.parse(props.filePath).base}
       </div>
       <div
-        onClick={() => props.closeTab(props.fileName)}
+        onClick={() => props.closeTab(props.filePath)}
         style={{
           width: "0.5rem",
           height: "0.5rem",

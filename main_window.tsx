@@ -1,5 +1,6 @@
+import fs from "fs";
 import path from "path";
-import React, { CSSProperties, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ipcRenderer } from "electron";
 import Editor from "./components/main_window/editor";
@@ -14,63 +15,70 @@ const editorWindowStyle: CSSProperties = {
 };
 
 export type TabType = {
-  fileName: string;
+  filePath: string;
   active: boolean;
   lines: LineType[];
 };
 
 function EditorWindow() {
-  const [tabs, setTabs] = useState<TabType[]>([
-    {
-      fileName: "test1",
-      active: true,
-      lines: [
-        { text: "file1 this is a test 1", active: true, caretPosition: 0 },
-        { text: "file1 this is    a test 2", active: false, caretPosition: 0 },
-        { text: "file1 this is a test 3", active: false, caretPosition: 0 },
-        { text: "file1 this is a test 4", active: false, caretPosition: 0 },
-        { text: "file1 this is a test 5", active: false, caretPosition: 0 },
-      ],
-    },
-    {
-      fileName: "test2",
-      active: false,
-      lines: [
-        { text: "this is    a test 1", active: true, caretPosition: 0 },
-        { text: "this is a test 2", active: false, caretPosition: 0 },
-        { text: "this is a test 3", active: false, caretPosition: 0 },
-        { text: "this is a test 4", active: false, caretPosition: 0 },
-        { text: "this is a test 5", active: false, caretPosition: 0 },
-      ],
-    },
-  ]);
+  const [tabs, setTabs] = useState<TabType[]>([]);
 
-  ipcRenderer.on(
-    "new-file",
-    (_: any, fileContent: string, filePath: string) => {
-      const lines = fileContent.split(/\r?\n/).map((line, index) => {
-        if (index == 0) {
-          return { text: line, active: true, caretPosition: 0 };
-        } else {
-          return { text: line, active: false, caretPosition: 0 };
+  useEffect(() => {
+    // when main process opens a new file "new-file" event is sent
+    ipcRenderer.on(
+      "new-file",
+      (_: any, fileContent: string, filePath: string) => {
+        console.log("in new file");
+        console.log("first", tabs);
+        // converting file content to Tab object
+        const lines = fileContent.split(/\r?\n/).map((line, index) => {
+          // cursor should be on first line, so making first line active
+          if (index == 0) {
+            return { text: line, active: true, caretPosition: 0 };
+          } else {
+            return { text: line, active: false, caretPosition: 0 };
+          }
+        });
+        // creating new tab to insert into tabs array
+        const newTab: TabType = {
+          filePath: filePath,
+          active: true,
+          lines: lines,
+        };
+        // deactivating other tabs, because new tab is active
+        for (let i = 0; i < tabs.length; i++) {
+          tabs[i].active = false;
         }
-      });
-
-      const newTab: TabType = {
-        fileName: path.parse(filePath).base,
-        active: true,
-        lines: lines,
-      };
-      for (let i = 0; i < tabs.length; i++) {
-        tabs[i].active = false;
+        tabs.push(newTab);
+        setTabs([...tabs]);
+        console.log("last", tabs);
       }
-      tabs.push(newTab);
-      setTabs([...tabs]);
-    }
-  );
+    );
+
+    ipcRenderer.on("save-file", () => {
+      let concatedLines = "";
+
+      for (let tab of tabs) {
+        if (tab.active == true) {
+          for (let line of tab.lines) {
+            if (concatedLines == "") {
+              concatedLines = line.text;
+            } else {
+              concatedLines += "\n" + line.text;
+            }
+          }
+          fs.writeFileSync(tab.filePath, concatedLines);
+          console.log("saving file");
+          console.log(tab.filePath);
+          console.log(concatedLines);
+          break;
+        }
+      }
+    });
+  }, []);
 
   const updateLines = (updatedLines: LineType[], fileName: string): void => {
-    let tab = tabs.filter((tab) => tab.fileName == fileName)[0];
+    let tab = tabs.filter((tab) => tab.filePath == fileName)[0];
     tab.lines = updatedLines;
     setTabs([...tabs]);
   };
@@ -78,7 +86,7 @@ function EditorWindow() {
   const closeTab = (filePath: string) => {
     // removing desired tab object from tab array list
     for (let i = 0; i < tabs.length; i++) {
-      if (tabs[i].fileName == filePath) {
+      if (tabs[i].filePath == filePath) {
         tabs.splice(i, 1);
         break;
       }
@@ -88,11 +96,12 @@ function EditorWindow() {
       tabs[0].active = true;
     }
     setTabs([...tabs]);
+    console.log("closed tab", tabs);
   };
 
   const changeActiveTab = (filePath: string) => {
     const updatedTabs = tabs.map((tab) => {
-      if (tab.fileName == filePath) {
+      if (tab.filePath == filePath) {
         return { ...tab, active: true };
       } else {
         return { ...tab, active: false };
@@ -115,7 +124,7 @@ function EditorWindow() {
         />
         <Editor
           lines={activeTab.lines}
-          activeFileName={activeTab.fileName}
+          activeFileName={activeTab.filePath}
           updateLines={updateLines}
         />
       </div>
