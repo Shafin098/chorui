@@ -48,7 +48,11 @@ function Line(props: LinePropType) {
             lineDivRef.current.childNodes,
             props.caretPosition
           );
+          console.log("end debug");
+
           const range = document.createRange();
+          console.log(lineDivRef.current.childNodes);
+
           range.setStart(lineDivRef.current.childNodes[0], props.caretPosition);
           range.collapse(true);
           const selection = window.getSelection();

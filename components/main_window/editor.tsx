@@ -133,7 +133,14 @@ function Editor(props: EditorPropType) {
     if (lineIndex > 0) {
       lines[lineIndex].active = false;
       lines[lineIndex - 1].active = true;
-      lines[lineIndex - 1].caretPosition = lines[lineIndex].caretPosition;
+      // newly active line should have atleast less or equal number of characters
+      // to previously active lines caret position.
+      // If not caret should be at the end of the line (which is lines character length)
+      if (lines[lineIndex].caretPosition <= lines[lineIndex - 1].text.length) {
+        lines[lineIndex - 1].caretPosition = lines[lineIndex].caretPosition;
+      } else {
+        lines[lineIndex - 1].caretPosition = lines[lineIndex - 1].text.length;
+      }
       lines[lineIndex].caretPosition = 0;
     }
     props.updateLines(lines, props.activeFileName);
@@ -143,7 +150,14 @@ function Editor(props: EditorPropType) {
     if (lineIndex < lines.length - 1) {
       lines[lineIndex].active = false;
       lines[lineIndex + 1].active = true;
-      lines[lineIndex + 1].caretPosition = lines[lineIndex].caretPosition;
+      // newly active line should have atleast less or equal number of characters
+      // to previously active lines caret position
+      // If not caret should be at the end of the line (which is lines character length)
+      if (lines[lineIndex].caretPosition <= lines[lineIndex + 1].text.length) {
+        lines[lineIndex + 1].caretPosition = lines[lineIndex].caretPosition;
+      } else {
+        lines[lineIndex + 1].caretPosition = lines[lineIndex + 1].text.length;
+      }
       lines[lineIndex].caretPosition = 0;
     }
     props.updateLines(lines, props.activeFileName);
