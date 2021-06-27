@@ -1,5 +1,4 @@
 import fs from "fs";
-import path from "path";
 import React, { CSSProperties, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ipcRenderer } from "electron";
@@ -24,57 +23,11 @@ function EditorWindow() {
   const [tabs, setTabs] = useState<TabType[]>([]);
 
   useEffect(() => {
-    // when main process opens a new file "new-file" event is sent
-    ipcRenderer.on(
-      "new-file",
-      (_: any, fileContent: string, filePath: string) => {
-        // converting file content to Tab object
-        const lines = fileContent.split(/\r?\n/).map((line, index) => {
-          // cursor should be on first line, so making first line active
-          if (index == 0) {
-            return { text: line, active: true, caretPosition: 0 };
-          } else {
-            return { text: line, active: false, caretPosition: 0 };
-          }
-        });
-        // creating new tab to insert into tabs array
-        const newTab: TabType = {
-          filePath: filePath,
-          active: true,
-          lines: lines,
-        };
-        // deactivating other tabs, because new tab is active
-        for (let i = 0; i < tabs.length; i++) {
-          tabs[i].active = false;
-        }
-        tabs.push(newTab);
-        setTabs([...tabs]);
-      }
-    );
-
-    ipcRenderer.on("save-file", () => {
-      let concatedLines = "";
-
-      for (let tab of tabs) {
-        if (tab.active == true) {
-          for (let line of tab.lines) {
-            if (concatedLines == "") {
-              concatedLines = line.text;
-            } else {
-              concatedLines += "\n" + line.text;
-            }
-          }
-          fs.writeFileSync(tab.filePath, concatedLines);
-          break;
-        }
-      }
-    });
+    registerNewFileOpenListener(tabs, setTabs);
+    registerFileSavedListener(tabs);
 
     // removing all listeners
-    return () => {
-      ipcRenderer.removeAllListeners("new-file");
-      ipcRenderer.removeAllListeners("save-file");
-    };
+    return unregisterAllListeners;
   }, [tabs]);
 
   const updateLines = (updatedLines: LineType[], fileName: string): void => {
@@ -132,3 +85,63 @@ function EditorWindow() {
 }
 
 ReactDOM.render(<EditorWindow />, document.getElementById("root"));
+
+function registerNewFileOpenListener(
+  tabs: TabType[],
+  setTabs: (tabs: TabType[]) => void
+): void {
+  // when main process opens a new file "new-file" event is sent
+  ipcRenderer.on(
+    "new-file",
+    (_: any, fileContent: string, filePath: string) => {
+      // converting file content to Tab object
+      const lines = fileContent.split(/\r?\n/).map((line, index) => {
+        // Tabs causes problems with caret positon, so replacing tab with 4 spaces
+        line = line.replaceAll(/\t/g, "    ");
+        // cursor should be on first line, so making first line active
+        if (index == 0) {
+          return { text: line, active: true, caretPosition: 0 };
+        } else {
+          return { text: line, active: false, caretPosition: 0 };
+        }
+      });
+      // creating new tab to insert into tabs array
+      const newTab: TabType = {
+        filePath: filePath,
+        active: true,
+        lines: lines,
+      };
+      // deactivating other tabs, because new tab is active
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].active = false;
+      }
+      tabs.push(newTab);
+      setTabs([...tabs]);
+    }
+  );
+}
+
+function registerFileSavedListener(tabs: TabType[]): void {
+  ipcRenderer.on("save-file", () => {
+    let concatedLines = "";
+
+    for (let tab of tabs) {
+      if (tab.active == true) {
+        for (let line of tab.lines) {
+          if (concatedLines == "") {
+            concatedLines = line.text;
+          } else {
+            concatedLines += "\n" + line.text;
+          }
+        }
+        fs.writeFileSync(tab.filePath, concatedLines);
+        break;
+      }
+    }
+  });
+}
+
+function unregisterAllListeners() {
+  ipcRenderer.removeAllListeners("new-file");
+  ipcRenderer.removeAllListeners("save-file");
+}

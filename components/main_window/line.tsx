@@ -36,39 +36,68 @@ function Line(props: LinePropType) {
   const lineDivRef = createRef<HTMLPreElement>();
 
   useEffect(() => {
-    if (props.active) {
-      if (lineDivRef.current !== null) {
-        //console.log(props.txt.length, props.caretPosition);
-        lineDivRef.current.focus();
-        // setting caret position properly
-        //console.log(lineDivRef.current.childNodes)
-        if (lineDivRef.current.childNodes.length > 0) {
-          console.log(
-            "dbg: ",
-            lineDivRef.current.childNodes,
-            props.caretPosition
-          );
-          console.log("end debug");
+    if (props.active && lineDivRef.current !== null) {
+      lineDivRef.current.focus();
+      if (lineDivRef.current.childNodes.length > 0) {
+        const range = document.createRange();
 
-          const range = document.createRange();
-          console.log(lineDivRef.current.childNodes);
+        let adjustedCaretPosition = props.caretPosition;
 
-          range.setStart(lineDivRef.current.childNodes[0], props.caretPosition);
-          range.collapse(true);
-          const selection = window.getSelection();
-          if (selection !== null) {
-            selection.removeAllRanges();
-            selection.addRange(range);
+        for (let child of Array.from(lineDivRef.current.childNodes)) {
+          if (child.nodeName == "SPAN") {
+            let c = child as HTMLElement;
+            if (adjustedCaretPosition > c.innerText.length) {
+              let c = child as HTMLElement;
+              adjustedCaretPosition -= c.innerText.length;
+            } else {
+              if (child.firstChild != null) {
+                range.setStart(child.firstChild, adjustedCaretPosition);
+              }
+              range.collapse(true);
+              const selection = window.getSelection();
+              if (selection !== null) {
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+
+              break;
+            }
+          } else {
+            if (
+              child.textContent != null &&
+              adjustedCaretPosition > child.textContent.length
+            ) {
+              if (child.textContent !== null) {
+                adjustedCaretPosition -= child.textContent.length;
+              }
+            } else {
+              range.setStart(child, adjustedCaretPosition);
+              range.collapse(true);
+              const selection = window.getSelection();
+              if (selection !== null) {
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+
+              break;
+            }
           }
         }
       }
     }
   });
 
-  const escapeHtml = (htmlString: string) => {
+  const highLight = (htmlString: string): string => {
+    return htmlString.replaceAll(
+      "func",
+      `<span style="color:red;">func</span>`
+    );
+  };
+
+  const escapeHtml = (htmlString: string): string => {
     htmlString = htmlString.replaceAll("<", "&lt;");
     htmlString = htmlString.replaceAll(">", "&gt;");
-    return htmlString;
+    return highLight(htmlString);
   };
 
   const lineNumber = (props.lineIndex + 1).toString();
@@ -86,7 +115,6 @@ function Line(props: LinePropType) {
         contentEditable={true}
         onClick={(_) => props.handleOnClick(props.lineIndex)}
         onInput={(e) => {
-          //console.log("calling change");
           const preElem = e.target as HTMLPreElement;
           props.handleChange(preElem.innerText, props);
         }}
