@@ -131,7 +131,7 @@ function Editor(props: EditorPropType) {
       case "Enter":
         e.preventDefault();
         const elem = e.target as HTMLElement;
-        handleEnterPress(elem.innerHTML, lineIndex);
+        handleEnterPress(elem.innerText, lineIndex);
         break;
       case "Backspace":
         handleBackSpacePress(lineIndex);
