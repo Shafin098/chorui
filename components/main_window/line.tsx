@@ -39,10 +39,13 @@ function Line(props: LinePropType) {
     if (props.active && lineDivRef.current !== null) {
       lineDivRef.current.focus();
       if (lineDivRef.current.childNodes.length > 0) {
+        // Setting caret properly using props.caretPosition.
+        // Line component can have textnode inside span elem or only textnode.
+        // props.caretPosition is offset from the start of the line, but
+        // caret only be set only in textnode and takes local offset.
+        // So traversing line componensts all child nodes and calculating local caret offset
         const range = document.createRange();
-
         let adjustedCaretPosition = props.caretPosition;
-
         for (let child of Array.from(lineDivRef.current.childNodes)) {
           if (child.nodeName == "SPAN") {
             let c = child as HTMLElement;
@@ -88,15 +91,42 @@ function Line(props: LinePropType) {
   });
 
   const highLight = (htmlString: string): string => {
-    return htmlString.replaceAll(
-      "func",
-      `<span style="color:red;">func</span>`
-    );
+    return htmlString
+      .replace(/<span.*?#.*?#.*?<\/span>|(#.*?#)/gu, (match, group1) => {
+        if (group1 === undefined) {
+          return match;
+        } else {
+          return `<span style='color:grey;'>${group1}</span>`;
+        }
+      })
+      .replace(/<span.*?".*?".*?<\/span>|(".*?")/gu, (match, group1) => {
+        if (group1 === undefined) {
+          return match;
+        } else {
+          return `<span style='color:green;'>${group1}</span>`;
+        }
+      })
+      .replace(/<span.*?ফাং.*?<\/span>|(ফাং)/gu, (m, group1) => {
+        if (group1 === undefined) {
+          return m.replace(
+            /(<\/span>.*?)ফাং(.*?<span)/gu,
+            (newM, newGoup1, newGroup2): string => {
+              if (newM) {
+                return `${newGoup1}<span style='color:red;'></span>${newGroup2}`;
+              } else {
+                return newM;
+              }
+            }
+          );
+        } else {
+          return `<span style='color:red;'>${group1}</span>`;
+        }
+      });
   };
 
   const escapeHtml = (htmlString: string): string => {
-    htmlString = htmlString.replaceAll("<", "&lt;");
-    htmlString = htmlString.replaceAll(">", "&gt;");
+    htmlString = htmlString.replace(/</g, "&lt;");
+    htmlString = htmlString.replace(/>/g, "&gt;");
     return highLight(htmlString);
   };
 
