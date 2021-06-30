@@ -121,6 +121,36 @@ function Line(props: LinePropType) {
         } else {
           return `<span style='color:red;'>${group1}</span>`;
         }
+      }).replace(/<span.*?নাম.*?<\/span>|(নাম)/gu, (m, group1) => {
+        if (group1 === undefined) {
+          return m.replace(
+            /(<\/span>.*?)নাম(.*?<span)/gu,
+            (newM, newGoup1, newGroup2): string => {
+              if (newM) {
+                return `${newGoup1}<span style='color:blue;'></span>${newGroup2}`;
+              } else {
+                return newM;
+              }
+            }
+          );
+        } else {
+          return `<span style='color:blue;'>${group1}</span>`;
+        }
+      }).replace(/<span.*?[,;(){}\[\]=].*?<\/span>|([,;(){}\[\]=])/gu, (m, group1) => {
+        if (group1 === undefined) {
+          return m.replace(
+            /(<\/span>.*?)[,;(){}\[\]=](.*?<span)/gu,
+            (newM, newGoup1, newGroup2): string => {
+              if (newM) {
+                return `${newGoup1}<span style='color:purple;'></span>${newGroup2}`;
+              } else {
+                return newM;
+              }
+            }
+          );
+        } else {
+          return `<span style='color:purple;'>${group1}</span>`;
+        }
       });
   };
 
