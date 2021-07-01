@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { createRef, CSSProperties, useRef } from "react";
 import Line from "./line";
 import { LineType, LinePropType } from "./line";
 
@@ -168,11 +168,15 @@ function Editor(props: EditorPropType) {
     props.updateLines(updatedLines, props.activeFileName);
   };
 
+  // for tracking multiline comment block
+  const insideCommentBlock = useRef(false);
+
   const lineComponents = lines.map((line, index) => {
     const lineNumLeftPadding =
       lines.length.toString().length - (index + 1).toString().length;
     return (
       <Line
+        insideCommentBlock={insideCommentBlock}
         padding={lineNumLeftPadding}
         key={`${index}${line}`}
         active={line.active}

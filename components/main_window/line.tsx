@@ -1,4 +1,4 @@
-import React, { createRef, CSSProperties, useEffect } from "react";
+import React, { createRef, CSSProperties, useEffect, useRef } from "react";
 
 export type LineType = { text: string; active: boolean; caretPosition: number };
 
@@ -24,6 +24,7 @@ export type LinePropType = {
   caretPosition: number;
   lineIndex: number;
   padding: number;
+  insideCommentBlock: any;
   handleOnClick: (lineIndex: number) => void;
   handleChange: (text: string, props: LinePropType) => void;
   handleKeyPress: (
@@ -91,10 +92,123 @@ function Line(props: LinePropType) {
   });
 
   const highLight = (htmlString: string): string => {
+    if (props.lineIndex === 0) {
+      props.insideCommentBlock.current = false;
+    }
+
+    // Handling multiline comment block
+    const hashSigns = [];
+    for (let i = 0; i < htmlString.length; i++) {
+      if (htmlString.charAt(i) === "#") {
+        hashSigns.push(i);
+      }
+    }
+    // if hashsign not empty line must have #
+    if (hashSigns.length > 0) {
+      // must be closing # for comment block
+      if (props.insideCommentBlock.current) {
+        const beforeHashSign = htmlString.substring(0, hashSigns[0] + 1);
+        const afterHashSign = htmlString.substring(
+          hashSigns[0] + 1,
+          htmlString.length
+        );
+        console.log("closing: ", beforeHashSign, afterHashSign);
+        htmlString =
+          `<span style='color:grey;'>${beforeHashSign}</span>` + afterHashSign;
+
+        //debugger;
+        props.insideCommentBlock.current = false;
+        // After closing there still could be a comment block opening
+        const remainingHashSigns = [];
+        for (let i = 0; i < afterHashSign.length; i++) {
+          if (afterHashSign.charAt(i) === "#") {
+            remainingHashSigns.push(i);
+          }
+        }
+        if (remainingHashSigns.length > 0) {
+          if (remainingHashSigns.length % 2 !== 0) {
+            const newBeforeHashSign = afterHashSign.substring(
+              0,
+              remainingHashSigns[remainingHashSigns.length - 1]
+            );
+            const newAfterHashSign = afterHashSign.substring(
+              remainingHashSigns[remainingHashSigns.length - 1],
+              afterHashSign.length
+            );
+            console.log("opening: ", newBeforeHashSign, newAfterHashSign);
+
+            htmlString =
+              `<span style='color:grey;'>${beforeHashSign}</span>` +
+              newBeforeHashSign +
+              `<span style='color:grey;'>${newAfterHashSign}</span>`;
+
+            //debugger;
+            props.insideCommentBlock.current = true;
+          } else {
+            htmlString = `<span style='color:grey;'>${beforeHashSign}</span>`;
+            for (let i = 0; i < remainingHashSigns.length; i += 2) {
+              htmlString +=
+                afterHashSign.substring(i, remainingHashSigns[i]) +
+                `<span style='color:grey;'>${afterHashSign.substring(
+                  remainingHashSigns[i],
+                  remainingHashSigns[i + 1] + 1
+                )}</span>`;
+              if (i + 2 < remainingHashSigns.length) {
+                htmlString += afterHashSign.substring(
+                  remainingHashSigns[i + 1] + 1,
+                  remainingHashSigns[i + 2]
+                );
+              } else if (remainingHashSigns[i + 1] < afterHashSign.length) {
+                htmlString += afterHashSign.substring(
+                  remainingHashSigns[i + 1] + 1,
+                  afterHashSign.length
+                );
+              }
+            }
+          }
+        }
+      }
+      // must be opening # for comment block
+      else if (hashSigns.length % 2 !== 0) {
+        const beforeHashSign = htmlString.substring(
+          0,
+          hashSigns[hashSigns.length - 1]
+        );
+        const afterHashSign = htmlString.substring(
+          hashSigns[hashSigns.length - 1],
+          htmlString.length
+        );
+        console.log("opening: ", beforeHashSign, afterHashSign);
+
+        htmlString =
+          beforeHashSign + `<span style='color:grey;'>${afterHashSign}</span>`;
+
+        //debugger;
+        props.insideCommentBlock.current = true;
+      }
+    }
+    // doesn't have # but could be in multiline comment block
+    else {
+      // definitely in multiline comment block
+      // whole line should be in span with grey color
+      if (props.insideCommentBlock.current) {
+        return `<span style='color:grey;'>${htmlString}</span>`;
+      }
+    }
+
     return htmlString
-      .replace(/<span.*?#.*?#.*?<\/span>|(#.*?#)/gu, (match, group1) => {
+      .replace(/<span.*?#.*?#.*?<\/span>|(#.*?#)/gu, (m, group1) => {
         if (group1 === undefined) {
-          return match;
+          return m.replace(
+            /(<\/span>.*?)(#.*?#)(.*?<span)/gu,
+            (newM, newGoup1, newGroup2, newGroup3): string => {
+              if (newM) {
+                return `${newGoup1}<span style='color:grey;'>${newGroup2}</span>${newGroup3}`;
+              } else {
+                return newM;
+              }
+            }
+          );
         } else {
           return `<span style='color:grey;'>${group1}</span>`;
         }
@@ -112,7 +226,7 @@ function Line(props: LinePropType) {
             /(<\/span>.*?)ফাং(.*?<span)/gu,
             (newM, newGoup1, newGroup2): string => {
               if (newM) {
-                return `${newGoup1}<span style='color:red;'></span>${newGroup2}`;
+                return `${newGoup1}<span style='color:red;'>ফাং</span>${newGroup2}`;
               } else {
                 return newM;
               }
@@ -121,7 +235,8 @@ function Line(props: LinePropType) {
         } else {
           return `<span style='color:red;'>${group1}</span>`;
         }
-      }).replace(/<span.*?নাম.*?<\/span>|(নাম)/gu, (m, group1) => {
+      })
+      .replace(/<span.*?নাম.*?<\/span>|(নাম)/gu, (m, group1) => {
         if (group1 === undefined) {
           return m.replace(
             /(<\/span>.*?)নাম(.*?<span)/gu,
@@ -136,28 +251,33 @@ function Line(props: LinePropType) {
         } else {
           return `<span style='color:blue;'>${group1}</span>`;
         }
-      }).replace(/<span.*?[,;(){}\[\]=].*?<\/span>|([,;(){}\[\]=])/gu, (m, group1) => {
-        if (group1 === undefined) {
-          return m.replace(
-            /(<\/span>.*?)[,;(){}\[\]=](.*?<span)/gu,
-            (newM, newGoup1, newGroup2): string => {
-              if (newM) {
-                return `${newGoup1}<span style='color:purple;'></span>${newGroup2}`;
-              } else {
-                return newM;
+      })
+      .replace(
+        /<span.*?[,;(){}\[\]=].*?<\/span>|([,;(){}\[\]=])/gu,
+        (m, group1) => {
+          if (group1 === undefined) {
+            return m.replace(
+              /(<\/span>.*?)[,;(){}\[\]=](.*?<span)/gu,
+              (newM, newGoup1, newGroup2): string => {
+                if (newM) {
+                  return `${newGoup1}<span style='color:purple;'></span>${newGroup2}`;
+                } else {
+                  return newM;
+                }
               }
-            }
-          );
-        } else {
-          return `<span style='color:purple;'>${group1}</span>`;
+            );
+          } else {
+            return `<span style='color:purple;'>${group1}</span>`;
+          }
         }
-      });
+      );
   };
 
   const escapeHtml = (htmlString: string): string => {
     htmlString = htmlString.replace(/</g, "&lt;");
     htmlString = htmlString.replace(/>/g, "&gt;");
-    return highLight(htmlString);
+    htmlString = highLight(htmlString);
+    return htmlString;
   };
 
   const lineNumber = (props.lineIndex + 1).toString();
