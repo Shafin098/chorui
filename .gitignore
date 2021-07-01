@@ -1,3 +1,2 @@
-/node_modules
-/out
-out.js
+node_modules
+build

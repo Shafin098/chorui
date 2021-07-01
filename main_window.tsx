@@ -60,7 +60,15 @@ function EditorWindow() {
       }
     });
     setTabs([...updatedTabs]);
-    //console.log(updatedTabs);
+  };
+
+  const sendActiveFilePath = () => {
+    for (let tab of tabs) {
+      if (tab.active) {
+        ipcRenderer.sendSync("open-output", tab.filePath);
+        break;
+      }
+    }
   };
 
   const activeTab = tabs.filter((tab) => tab.active)[0];
@@ -69,6 +77,7 @@ function EditorWindow() {
   } else {
     return (
       <div style={editorWindowStyle}>
+        <button onClick={sendActiveFilePath}>Run</button>
         <Tabs
           tabs={tabs}
           changeActiveTab={changeActiveTab}

@@ -3,10 +3,13 @@ const path = require("path");
 module.exports = {
   mode: "development",
   target: "electron-renderer",
-  entry: "./main_window.tsx",
+  entry: {
+    editor: "./main_window.tsx",
+    output: "./output_window.ts",
+  },
   output: {
-    path: path.resolve(__dirname),
-    filename: "out.js",
+    path: path.resolve(__dirname, "build"),
+    filename: "[name].js",
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],

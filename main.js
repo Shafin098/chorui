@@ -1,5 +1,9 @@
-const { app, BrowserWindow, dialog, Menu } = require("electron");
+const { app, BrowserWindow, dialog, Menu, ipcMain } = require("electron");
 const fs = require("fs");
+
+ipcMain.on("open-output", (e, srcPath) => {
+  openOutPutWindow(srcPath);
+});
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -10,8 +14,8 @@ function createWindow() {
       contextIsolation: false,
     },
   });
-
   win.loadFile("index.html");
+
   const menu = Menu.buildFromTemplate([
     {
       label: "File",
@@ -51,6 +55,43 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+
+let outputWin = null;
+
+function openOutPutWindow(srcPath) {
+  const editorWin = BrowserWindow.getFocusedWindow();
+  if (editorWin === null) {
+    console.log("Unexpected error: mainWin is null");
+    app.quit();
+    return;
+  }
+
+  let { x, y } = editorWin.getBounds();
+  outputWin = new BrowserWindow({
+    x: x + 10,
+    y: y + 10,
+    show: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+
+  outputWin.loadFile("output.html");
+  // documents title will be used as src file path for pakhi spawned process
+  outputWin.title = srcPath;
+  outputWin.once("ready-to-show", () => {
+    if (outputWin === null) {
+      console.log("Unexpected error: ouputWin is null");
+      app.quit();
+    } else {
+      outputWin.show();
+    }
+  });
+  outputWin.on("closed", () => {
+    outputWin = null;
+  });
+}
 
 function openFileDialog(browserWin) {
   let openedFiles = dialog.showOpenDialogSync(browserWin, {
