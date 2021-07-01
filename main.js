@@ -77,15 +77,18 @@ function openOutPutWindow(srcPath) {
     },
   });
 
-  outputWin.loadFile("output.html");
-  // documents title will be used as src file path for pakhi spawned process
   outputWin.title = srcPath;
+
+  outputWin.loadFile("output.html");
+
   outputWin.once("ready-to-show", () => {
     if (outputWin === null) {
       console.log("Unexpected error: ouputWin is null");
       app.quit();
     } else {
       outputWin.show();
+      ipcMain.send;
+      outputWin.webContents.send("spawn", srcPath);
     }
   });
   outputWin.on("closed", () => {

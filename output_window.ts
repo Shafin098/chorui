@@ -1,73 +1,65 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import { ipcRenderer } from "electron";
 
-const outputArea = document.querySelector(".output-area");
-const stopBtn = document.querySelector("#stop-btn");
+ipcRenderer.on("spawn", function (e, pakhiSrcPath) {
+  const outputArea = document.querySelector(".output-area");
+  const stopBtn = document.querySelector("#stop-btn");
 
-const pakhiSrcPath: string = document.title;
-debugger;
-console.log(pakhiSrcPath);
-let pakhiProcess = spawn("/usr/local/bin/pakhi", [pakhiSrcPath]);
+  let pakhiProcess = spawn("/usr/local/bin/pakhi", [pakhiSrcPath]);
 
-addCtrlCStop(pakhiProcess);
+  addCtrlCStop(pakhiProcess);
 
-function addCtrlCStop(pakhiProc: ChildProcessWithoutNullStreams): void {
-  document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.key === "c") {
-      pakhiProc.kill();
+  stopBtn?.addEventListener("click", () => {
+    pakhiProcess.kill();
+  });
+
+  pakhiProcess.stdout.on("data", (data) => {
+    let preElem = makePre(data.toString());
+    if (outputArea === null) {
+      console.error("Cannot find outputArea");
+    } else {
+      let lastChild = outputArea.querySelector(".input-area");
+      if (lastChild === null) {
+        console.error("input-area dom element not found");
+      } else {
+        outputArea.removeChild(lastChild);
+        outputArea.appendChild(preElem);
+        outputArea.appendChild(createInputArea());
+      }
     }
   });
-}
 
-stopBtn?.addEventListener("click", () => {
-  pakhiProcess.kill();
-});
-
-pakhiProcess.stdout.on("data", (data) => {
-  let preElem = makePre(data.toString());
-  if (outputArea === null) {
-    console.error("Cannot find outputArea");
-  } else {
-    let lastChild = outputArea.querySelector(".input-area");
-    if (lastChild === null) {
-      console.error("input-area dom element not found");
+  pakhiProcess.stderr.on("data", (errData) => {
+    let errPreElem = makeErrorPre(errData.toString());
+    if (outputArea === null) {
+      console.error("Cannot find outputArea");
     } else {
-      outputArea.removeChild(lastChild);
-      outputArea.appendChild(preElem);
-      outputArea.appendChild(createInputArea());
+      let lastChild = outputArea.querySelector(".input-area");
+      if (lastChild === null) {
+        console.error("input-area dom element not found");
+      } else {
+        outputArea.removeChild(lastChild);
+        outputArea.appendChild(errPreElem);
+        outputArea.appendChild(createInputArea());
+      }
     }
-  }
-});
+  });
 
-pakhiProcess.stderr.on("data", (errData) => {
-  let errPreElem = makeErrorPre(errData.toString());
-  if (outputArea === null) {
-    console.error("Cannot find outputArea");
-  } else {
-    let lastChild = outputArea.querySelector(".input-area");
-    if (lastChild === null) {
-      console.error("input-area dom element not found");
-    } else {
-      outputArea.removeChild(lastChild);
-      outputArea.appendChild(errPreElem);
-      outputArea.appendChild(createInputArea());
+  document.addEventListener("keypress", (ev) => {
+    let newline = "\n";
+    if (process.platform === "win32") {
+      newline = "\r\n";
     }
-  }
-});
-
-document.addEventListener("keypress", (ev) => {
-  let newline = "\n";
-  if (process.platform === "win32") {
-    newline = "\r\n";
-  }
-  let inputArea = document.querySelector(".input-area");
-  if (ev.target === inputArea && ev.key === "Enter") {
-    if (inputArea !== null) {
-      pakhiProcess.stdin.write(inputArea.textContent + newline);
-      pakhiProcess.stdin.end();
-    } else {
-      console.error("input area is null");
+    let inputArea = document.querySelector(".input-area");
+    if (ev.target === inputArea && ev.key === "Enter") {
+      if (inputArea !== null) {
+        pakhiProcess.stdin.write(inputArea.textContent + newline);
+        pakhiProcess.stdin.end();
+      } else {
+        console.error("input area is null");
+      }
     }
-  }
+  });
 });
 
 function makeErrorPre(err: string): HTMLPreElement {
@@ -88,4 +80,12 @@ function createInputArea(): HTMLPreElement {
   inputPre.contentEditable = "true";
   inputPre.classList.add("input-area");
   return inputPre;
+}
+
+function addCtrlCStop(pakhiProc: ChildProcessWithoutNullStreams): void {
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "c") {
+      pakhiProc.kill();
+    }
+  });
 }
