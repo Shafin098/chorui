@@ -1,9 +1,11 @@
-import React, { createRef, CSSProperties, useEffect, useRef } from "react";
+import React, { createRef, CSSProperties, useEffect } from "react";
+import { color } from "./util/color";
 
 export type LineType = { text: string; active: boolean; caretPosition: number };
 
 const lineStyle: CSSProperties = {
   width: "100%",
+  color: color.fg,
   fontFamily: "monospace",
   display: "flex",
   flexDirection: "row",
@@ -12,8 +14,8 @@ const lineStyle: CSSProperties = {
 };
 
 const lineNumberStyle: CSSProperties = {
-  background: "#eee",
-  color: "rgb(50, 50, 255)",
+  background: color.bg1,
+  color: color.fg,
   padding: "0.2em",
   marginRight: "0.4rem",
 };
@@ -138,18 +140,18 @@ function Line(props: LinePropType) {
             console.log("opening: ", newBeforeHashSign, newAfterHashSign);
 
             htmlString =
-              `<span style='color:grey;'>${beforeHashSign}</span>` +
+              `<span style='color:${color.gray};'>${beforeHashSign}</span>` +
               newBeforeHashSign +
-              `<span style='color:grey;'>${newAfterHashSign}</span>`;
+              `<span style='color:${color.gray};'>${newAfterHashSign}</span>`;
 
             //debugger;
             props.insideCommentBlock.current = true;
           } else {
-            htmlString = `<span style='color:grey;'>${beforeHashSign}</span>`;
+            htmlString = `<span style='color:${color.gray};'>${beforeHashSign}</span>`;
             for (let i = 0; i < remainingHashSigns.length; i += 2) {
               htmlString +=
                 afterHashSign.substring(i, remainingHashSigns[i]) +
-                `<span style='color:grey;'>${afterHashSign.substring(
+                `<span style='color:${color.gray};'>${afterHashSign.substring(
                   remainingHashSigns[i],
                   remainingHashSigns[i + 1] + 1
                 )}</span>`;
@@ -181,7 +183,8 @@ function Line(props: LinePropType) {
         console.log("opening: ", beforeHashSign, afterHashSign);
 
         htmlString =
-          beforeHashSign + `<span style='color:grey;'>${afterHashSign}</span>`;
+          beforeHashSign +
+          `<span style='color:${color.gray};'>${afterHashSign}</span>`;
 
         //debugger;
         props.insideCommentBlock.current = true;
@@ -192,7 +195,7 @@ function Line(props: LinePropType) {
       // definitely in multiline comment block
       // whole line should be in span with grey color
       if (props.insideCommentBlock.current) {
-        return `<span style='color:grey;'>${htmlString}</span>`;
+        return `<span style='color:${color.gray};'>${htmlString}</span>`;
       }
     }
 
@@ -203,21 +206,21 @@ function Line(props: LinePropType) {
             /(<\/span>.*?)(#.*?#)(.*?<span)/gu,
             (newM, newGoup1, newGroup2, newGroup3): string => {
               if (newM) {
-                return `${newGoup1}<span style='color:grey;'>${newGroup2}</span>${newGroup3}`;
+                return `${newGoup1}<span style='color:${color.gray};'>${newGroup2}</span>${newGroup3}`;
               } else {
                 return newM;
               }
             }
           );
         } else {
-          return `<span style='color:grey;'>${group1}</span>`;
+          return `<span style='color:${color.gray};'>${group1}</span>`;
         }
       })
       .replace(/<span.*?".*?".*?<\/span>|(".*?")/gu, (match, group1) => {
         if (group1 === undefined) {
           return match;
         } else {
-          return `<span style='color:green;'>${group1}</span>`;
+          return `<span style='color:${color.green};'>${group1}</span>`;
         }
       })
       .replace(/<span.*?ফাং.*?<\/span>|(ফাং)/gu, (m, group1) => {
@@ -226,14 +229,14 @@ function Line(props: LinePropType) {
             /(<\/span>.*?)ফাং(.*?<span)/gu,
             (newM, newGoup1, newGroup2): string => {
               if (newM) {
-                return `${newGoup1}<span style='color:red;'>ফাং</span>${newGroup2}`;
+                return `${newGoup1}<span style='color:${color.red};'>ফাং</span>${newGroup2}`;
               } else {
                 return newM;
               }
             }
           );
         } else {
-          return `<span style='color:red;'>${group1}</span>`;
+          return `<span style='color:${color.red};'>${group1}</span>`;
         }
       })
       .replace(/<span.*?নাম.*?<\/span>|(নাম)/gu, (m, group1) => {
@@ -242,35 +245,51 @@ function Line(props: LinePropType) {
             /(<\/span>.*?)নাম(.*?<span)/gu,
             (newM, newGoup1, newGroup2): string => {
               if (newM) {
-                return `${newGoup1}<span style='color:blue;'></span>${newGroup2}`;
+                return `${newGoup1}<span style='color:${color.blue};'></span>${newGroup2}`;
               } else {
                 return newM;
               }
             }
           );
         } else {
-          return `<span style='color:blue;'>${group1}</span>`;
+          return `<span style='color:${color.blue};'>${group1}</span>`;
         }
       })
       .replace(
-        /<span.*?[,;(){}\[\]=].*?<\/span>|([,;(){}\[\]=])/gu,
+        /<span.*?[,;(){}\[\]=].*?<\/span>|([,;(){}\[\]])/gu,
         (m, group1) => {
           if (group1 === undefined) {
             return m.replace(
               /(<\/span>.*?)[,;(){}\[\]=](.*?<span)/gu,
               (newM, newGoup1, newGroup2): string => {
                 if (newM) {
-                  return `${newGoup1}<span style='color:purple;'></span>${newGroup2}`;
+                  return `${newGoup1}<span style='color:${color.fg};'></span>${newGroup2}`;
                 } else {
                   return newM;
                 }
               }
             );
           } else {
-            return `<span style='color:purple;'>${group1}</span>`;
+            return `<span style='color:${color.fg};'>${group1}</span>`;
           }
         }
-      );
+      )
+      .replace(/<span.*?[=+-/*%].*?<\/span>|([=+-/*%])/gu, (m, group1) => {
+        if (group1 === undefined) {
+          return m.replace(
+            /(<\/span>.*?)[=+-/*%](.*?<span)/gu,
+            (newM, newGoup1, newGroup2): string => {
+              if (newM) {
+                return `${newGoup1}<span style='color:${color.orange};'></span>${newGroup2}`;
+              } else {
+                return newM;
+              }
+            }
+          );
+        } else {
+          return `<span style='color:${color.orange};'>${group1}</span>`;
+        }
+      });
   };
 
   const escapeHtml = (htmlString: string): string => {

@@ -1,8 +1,10 @@
-import React, { createRef, CSSProperties, useRef } from "react";
+import React, { CSSProperties, useRef } from "react";
 import Line from "./line";
 import { LineType, LinePropType } from "./line";
+import { color } from "./util/color";
 
 const editorStyle: CSSProperties = {
+  backgroundColor: color.bg,
   width: "100%",
   height: "100%",
   overflowX: "scroll",
