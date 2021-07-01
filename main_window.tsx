@@ -65,7 +65,7 @@ function EditorWindow() {
   const sendActiveFilePath = () => {
     for (let tab of tabs) {
       if (tab.active) {
-        ipcRenderer.sendSync("open-output", tab.filePath);
+        ipcRenderer.send("open-output", tab.filePath);
         break;
       }
     }

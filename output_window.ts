@@ -1,10 +1,11 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
-import { remote } from "electron";
 
 const outputArea = document.querySelector(".output-area");
 const stopBtn = document.querySelector("#stop-btn");
 
-const pakhiSrcPath: string = remote.getCurrentWindow().title;
+const pakhiSrcPath: string = document.title;
+debugger;
+console.log(pakhiSrcPath);
 let pakhiProcess = spawn("/usr/local/bin/pakhi", [pakhiSrcPath]);
 
 addCtrlCStop(pakhiProcess);
