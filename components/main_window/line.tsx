@@ -181,8 +181,8 @@ function Line(props: LinePropType) {
   };
 
   const escapeHtml = (htmlString: string): string => {
-    htmlString = htmlString.replace(/</g, "&lt;");
-    htmlString = htmlString.replace(/>/g, "&gt;");
+    htmlString = htmlString.replace(/</g, "&lt");
+    htmlString = htmlString.replace(/>/g, "&gt");
     htmlString = highLight(htmlString);
     return htmlString;
   };
@@ -258,6 +258,7 @@ function Line(props: LinePropType) {
       <pre style={lineNumberStyle}>{`${pads}${lineNumber}`}</pre>
       <pre
         style={{ minWidth: "10%" }}
+        spellCheck={false}
         ref={lineDivRef}
         dangerouslySetInnerHTML={{ __html: escapedAndHighlightedHtml }}
         contentEditable={true}
