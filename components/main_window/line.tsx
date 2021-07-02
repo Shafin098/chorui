@@ -3,8 +3,9 @@ import { color } from "./util/color";
 
 export type LineType = { text: string; active: boolean; caretPosition: number };
 
-const lineStyle: CSSProperties = {
+let lineStyle: CSSProperties = {
   width: "100%",
+  background: color.bg,
   color: color.fg,
   fontFamily: "monospace",
   display: "flex",
@@ -252,6 +253,11 @@ function Line(props: LinePropType) {
   let pads = "";
   for (let i = 0; i < props.padding; i++) {
     pads += " ";
+  }
+  if (props.active) {
+    lineStyle = { ...lineStyle, background: color.bg1 };
+  } else {
+    lineStyle = { ...lineStyle, background: color.bg };
   }
   return (
     <div style={lineStyle}>

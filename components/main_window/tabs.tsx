@@ -3,7 +3,8 @@ import Tab from "./tab";
 import { TabType } from "../../main_window";
 
 const tabsStyle: CSSProperties = {
-  overflowX: "scroll",
+  overflow: "scroll",
+  overflowY: "hidden",
   display: "flex",
   flexDirection: "row",
 };
@@ -27,7 +28,11 @@ function Tabs(props: TabsPropType) {
     );
   });
 
-  return <div style={tabsStyle}>{tabs}</div>;
+  return (
+    <div id="tabs" style={tabsStyle}>
+      {tabs}
+    </div>
+  );
 }
 
 export default Tabs;

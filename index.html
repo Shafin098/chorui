@@ -10,6 +10,10 @@
         box-sizing: border-box;
       }
 
+      * {
+        outline: none;
+      }
+
       body {
         width: 100vw;
         height: 100vh;
@@ -18,6 +22,10 @@
       #root {
         width: 100%;
         height: 100%;
+      }
+
+      div::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
       }
     </style>
     <title>Chorui</title>

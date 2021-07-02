@@ -192,7 +192,11 @@ function Editor(props: EditorPropType) {
     );
   });
 
-  return <div style={editorStyle}>{lineComponents}</div>;
+  return (
+    <div id="editor" style={editorStyle}>
+      {lineComponents}
+    </div>
+  );
 }
 
 /**
