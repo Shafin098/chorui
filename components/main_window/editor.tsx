@@ -23,9 +23,24 @@ function Editor(props: EditorPropType) {
     newText: string,
     { active, lineIndex }: LinePropType
   ): void => {
-    lines[lineIndex].text = newText;
+    newText = newText.replace(/\t/gu, "    ");
+    // pasted text could have multiple lines
+    const newLines = newText.split("\n");
+    lines[lineIndex].text = newLines[0];
     lines[lineIndex].active = active;
     lines[lineIndex].caretPosition = getCaretPosition();
+    // this loop will only run if newText has multiple
+    // lines (pasted text could have multiple lines)
+    // appending to lines array if multiple lines are found
+    for (let i = 1; i < newLines.length; i++) {
+      const line: LineType = {
+        text: newLines[i],
+        active: false,
+        caretPosition: 0,
+      };
+      lines.splice(lineIndex + 1, 0, line);
+      lineIndex += 1;
+    }
     props.updateLines(lines, props.activeFileName);
   };
 
