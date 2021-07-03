@@ -203,45 +203,47 @@ function Line(props: LinePropType) {
         // props.caretPosition is offset from the start of the line, but
         // caret only be set only in textnode and takes local offset.
         // So traversing line componensts all child nodes and calculating local caret offset
-        const range = document.createRange();
-        let adjustedCaretPosition = props.caretPosition;
-        for (let child of Array.from(lineDivRef.current.childNodes)) {
-          if (child.nodeName == "SPAN") {
-            let c = child as HTMLElement;
-            if (adjustedCaretPosition > c.innerText.length) {
+        if (window.getSelection()?.isCollapsed) {
+          const range = document.createRange();
+          let adjustedCaretPosition = props.caretPosition;
+          for (let child of Array.from(lineDivRef.current.childNodes)) {
+            if (child.nodeName == "SPAN") {
               let c = child as HTMLElement;
-              adjustedCaretPosition -= c.innerText.length;
-            } else {
-              if (child.firstChild != null) {
-                range.setStart(child.firstChild, adjustedCaretPosition);
-              }
-              range.collapse(true);
-              const selection = window.getSelection();
-              if (selection !== null) {
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
+              if (adjustedCaretPosition > c.innerText.length) {
+                let c = child as HTMLElement;
+                adjustedCaretPosition -= c.innerText.length;
+              } else {
+                if (child.firstChild != null) {
+                  range.setStart(child.firstChild, adjustedCaretPosition);
+                }
+                range.collapse(true);
+                const selection = window.getSelection();
+                if (selection !== null) {
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
 
-              break;
-            }
-          } else {
-            if (
-              child.textContent != null &&
-              adjustedCaretPosition > child.textContent.length
-            ) {
-              if (child.textContent !== null) {
-                adjustedCaretPosition -= child.textContent.length;
+                break;
               }
             } else {
-              range.setStart(child, adjustedCaretPosition);
-              range.collapse(true);
-              const selection = window.getSelection();
-              if (selection !== null) {
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
+              if (
+                child.textContent != null &&
+                adjustedCaretPosition > child.textContent.length
+              ) {
+                if (child.textContent !== null) {
+                  adjustedCaretPosition -= child.textContent.length;
+                }
+              } else {
+                range.setStart(child, adjustedCaretPosition);
+                range.collapse(true);
+                const selection = window.getSelection();
+                if (selection !== null) {
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
 
-              break;
+                break;
+              }
             }
           }
         }
