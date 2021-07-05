@@ -1,4 +1,4 @@
-import React, { CSSProperties, useRef } from "react";
+import React, { CSSProperties, useEffect, useRef } from "react";
 import Line from "./line";
 import { LineType, LinePropType } from "./line";
 import { color } from "./util/color";
@@ -19,6 +19,45 @@ type EditorPropType = {
 function Editor(props: EditorPropType) {
   const lines = props.lines;
 
+  useEffect(() => {
+    const ctrlC_listener = (e: KeyboardEvent) => {
+      if (e.key == "c" && e.ctrlKey) {
+        let text = "";
+
+        for (let i = 0; i < props.lines.length; i++) {
+          if (
+            props.lines[i].selectionStart > -1 &&
+            props.lines[i].selectionEnd > -1
+          ) {
+            text +=
+              props.lines[i].text.substring(
+                props.lines[i].selectionStart,
+                props.lines[i].selectionEnd
+              ) + "\n";
+            //props.lines[i].selectionStart = -1;
+            //props.lines[i].selectionEnd = -1;
+          }
+        }
+
+        console.log(text);
+        props.updateLines([...lines], props.activeFileName);
+      }
+    };
+    window.addEventListener("keydown", ctrlC_listener);
+
+    return () => {
+      window.removeEventListener("keydown", ctrlC_listener);
+    };
+  });
+
+  const clearTextSelection = () => {
+    for (let i = 0; i < lines.length; i++) {
+      lines[i].selectionStart = -1;
+      lines[i].selectionEnd = -1;
+      props.updateLines([...lines], props.activeFileName);
+    }
+  };
+
   const handleTextChange = (
     newText: string,
     { active, lineIndex }: LinePropType
@@ -37,6 +76,8 @@ function Editor(props: EditorPropType) {
         text: newLines[i],
         active: false,
         caretPosition: 0,
+        selectionStart: -1,
+        selectionEnd: -1,
       };
       lines.splice(lineIndex + 1, 0, line);
       lineIndex += 1;
@@ -55,7 +96,13 @@ function Editor(props: EditorPropType) {
     lines[lineIndex].active = false;
     lines[lineIndex].caretPosition = firstPartOfLine.length;
     // creating new line with lines second part
-    const newLine = { text: secondPartOfLine, active: true, caretPosition: 0 };
+    const newLine: LineType = {
+      text: secondPartOfLine,
+      active: true,
+      caretPosition: 0,
+      selectionStart: -1,
+      selectionEnd: -1,
+    };
     lines.splice(lineIndex + 1, 0, newLine);
 
     props.updateLines(lines, props.activeFileName);
@@ -76,10 +123,12 @@ function Editor(props: EditorPropType) {
       const mergedLineText = `${filteredLines[lineIndex - 1].text}${
         lines[lineIndex].text
       }`;
-      const newMergedLine = {
+      const newMergedLine: LineType = {
         text: mergedLineText,
         active: true,
         caretPosition: lines[lineIndex - 1].text.length,
+        selectionStart: -1,
+        selectionEnd: -1,
       };
       filteredLines[lineIndex - 1] = newMergedLine;
       updatedLines = filteredLines;
@@ -144,6 +193,7 @@ function Editor(props: EditorPropType) {
     e: React.KeyboardEvent<HTMLPreElement>,
     lineIndex: number
   ) => {
+    //clearTextSelection();
     switch (e.key) {
       case "Enter":
         e.preventDefault();
@@ -177,16 +227,49 @@ function Editor(props: EditorPropType) {
           ...line,
           active: true,
           caretPosition: getCaretPosition(),
+          selectionStart: -1,
+          selectionEnd: -1,
         };
       } else {
-        return { ...line, active: false };
+        return { ...line, active: false, selectionStart: -1, selectionEnd: -1 };
       }
     });
     props.updateLines(updatedLines, props.activeFileName);
   };
 
+  const handleOnBlur = (
+    lineIndex: number,
+    selectionStart: number,
+    selectionEnd: number
+  ): void => {
+    lines[lineIndex].selectionStart = selectionStart;
+    lines[lineIndex].selectionEnd = selectionEnd;
+    console.log(lineIndex + 1, `start: ${selectionStart} end: ${selectionEnd}`);
+
+    lines[lineIndex].active = false;
+    props.updateLines([...lines], props.activeFileName);
+  };
+
+  const handleMouseOver = (lineIndex: number): void => {
+    lines[lineIndex].active = true;
+    props.updateLines([...lines], props.activeFileName);
+  };
+
+  const isLineSelected = (lineIndex: number): boolean => {
+    if (lineIndex < 1) {
+      return false;
+    }
+    const line = props.lines[lineIndex];
+    if (line.selectionStart !== -1 && line.selectionEnd !== -1) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   // for tracking multiline comment block
   const insideCommentBlock = useRef(false);
+  const mouseDown = useRef(false);
 
   const lineComponents = lines.map((line, index) => {
     const lineNumLeftPadding =
@@ -194,6 +277,9 @@ function Editor(props: EditorPropType) {
     return (
       <Line
         insideCommentBlock={insideCommentBlock}
+        mouseDown={mouseDown}
+        selectionStart={line.selectionStart}
+        selectionEnd={line.selectionEnd}
         padding={lineNumLeftPadding}
         key={`${index}${line}`}
         active={line.active}
@@ -203,12 +289,30 @@ function Editor(props: EditorPropType) {
         handleChange={handleTextChange}
         handleKeyPress={handleKeyPress}
         handleOnClick={handleOnClick}
+        handleOnBlur={handleOnBlur}
+        handleMouseOver={handleMouseOver}
+        previousLineInSelection={isLineSelected}
       />
     );
   });
 
   return (
-    <div id="editor" style={editorStyle}>
+    <div
+      id="editor"
+      style={editorStyle}
+      onMouseDown={(e) => {
+        if (e.button === 0) {
+          mouseDown.current = true;
+          console.log("pressed");
+        }
+      }}
+      onMouseUp={(e) => {
+        if (e.button === 0) {
+          mouseDown.current = false;
+          console.log("released");
+        }
+      }}
+    >
       {lineComponents}
     </div>
   );

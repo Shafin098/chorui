@@ -1,24 +1,37 @@
-import React, { createRef, CSSProperties, useEffect, useMemo } from "react";
+import React, {
+  createRef,
+  CSSProperties,
+  MutableRefObject,
+  useEffect,
+  useMemo,
+} from "react";
 import { color } from "./util/color";
 
-export type LineType = { text: string; active: boolean; caretPosition: number };
+export type LineType = {
+  text: string;
+  active: boolean;
+  caretPosition: number;
+  selectionStart: number;
+  selectionEnd: number;
+};
 
 let lineStyle: CSSProperties = {
   width: "100%",
   background: color.bg,
   color: color.fg,
   fontFamily: "monospace",
+  fontSize: "1rem",
   display: "flex",
   flexDirection: "row",
-  alignItems: "center",
+  alignItems: "scenter",
   whiteSpace: "nowrap",
 };
 
 const lineNumberStyle: CSSProperties = {
-  background: color.bg1,
-  color: color.fg,
-  padding: "0.2em",
-  marginRight: "0.4rem",
+  background: color.bg,
+  color: color.gray,
+  paddingLeft: "0.5rem",
+  paddingRight: "1rem",
 };
 
 export type LinePropType = {
@@ -27,16 +40,28 @@ export type LinePropType = {
   caretPosition: number;
   lineIndex: number;
   padding: number;
-  insideCommentBlock: any;
+  insideCommentBlock: MutableRefObject<boolean>;
+  mouseDown: MutableRefObject<boolean>;
+  selectionStart: number;
+  selectionEnd: number;
   handleOnClick: (lineIndex: number) => void;
   handleChange: (text: string, props: LinePropType) => void;
   handleKeyPress: (
     e: React.KeyboardEvent<HTMLPreElement>,
     lineIndex: number
   ) => void;
+  handleOnBlur: (
+    lineIndex: number,
+    selectionStart: number,
+    selectionEnd: number
+  ) => void;
+  handleMouseOver: (lineIndex: number) => void;
+  previousLineInSelection: (lineIndex: number) => boolean;
 };
 
 function Line(props: LinePropType) {
+  //console.log(props.lineIndex, "rendering line");
+
   const highLightCommentAndString = (htmlString: string): string => {
     let highlightedString = "";
     let pointer = 0;
@@ -57,6 +82,14 @@ function Line(props: LinePropType) {
       }
     }
     while (pointer < htmlString.length) {
+      if (pointer >= props.selectionStart && pointer < props.selectionEnd) {
+        highlightedString +=
+          `<span style='background:green;'>` +
+          htmlString.substring(props.selectionStart, props.selectionEnd) +
+          "</span>";
+        pointer = props.selectionEnd;
+        continue;
+      }
       if (htmlString.charAt(pointer) === "#") {
         let closingHashFound = false;
         // closing comment case was handled previously so this must opening #
@@ -193,6 +226,24 @@ function Line(props: LinePropType) {
     [props]
   );
 
+  const getSelectionRange = (): [number, number] => {
+    const selection = window.getSelection();
+    if (selection !== null && !selection.isCollapsed) {
+      // This will be wrong if line has similar substring of selection
+      const index = props.txt.lastIndexOf(selection.toString());
+      if (index === -1) return [-1, -1];
+      if (index === props.caretPosition) {
+        return [props.caretPosition, props.txt.length];
+      } else {
+        return [index, props.caretPosition];
+      }
+      //const selectionStart = index;
+      //const selectionEnd = index + selection.toString().length;
+      //return [selectionStart, selectionEnd];
+    }
+    return [-1, -1];
+  };
+
   const lineDivRef = createRef<HTMLPreElement>();
   useEffect(() => {
     if (props.active && lineDivRef.current !== null) {
@@ -265,7 +316,8 @@ function Line(props: LinePropType) {
     <div style={lineStyle}>
       <pre style={lineNumberStyle}>{`${pads}${lineNumber}`}</pre>
       <pre
-        style={{ minWidth: "10%" }}
+        className="line"
+        style={{ minHeight: "100%", minWidth: "100%" }}
         spellCheck={false}
         ref={lineDivRef}
         dangerouslySetInnerHTML={{ __html: escapedAndHighlightedHtml }}
@@ -276,6 +328,38 @@ function Line(props: LinePropType) {
           props.handleChange(preElem.innerText, props);
         }}
         onKeyDown={(e) => props.handleKeyPress(e, props.lineIndex)}
+        onMouseOver={(e) => {
+          if (props.mouseDown.current) {
+            lineDivRef.current?.focus();
+            //setImmediate(() => {
+            props.handleMouseOver(props.lineIndex);
+            //});
+
+            //props.handleOnClick(props.lineIndex);
+          }
+        }}
+        onBlur={(e) => {
+          if (props.mouseDown.current) {
+            if (props.previousLineInSelection(props.lineIndex - 1)) {
+              console.log(
+                "selected: ",
+                0,
+                props.txt.length,
+                `line: ${lineNumber}`
+              );
+              props.handleOnBlur(props.lineIndex, 0, props.txt.length);
+            } else {
+              const [selectionStart, selectionEnd] = getSelectionRange();
+              console.log(
+                "selected: ",
+                0,
+                props.txt.length,
+                `line: ${lineNumber}`
+              );
+              props.handleOnBlur(props.lineIndex, selectionStart, selectionEnd);
+            }
+          }
+        }}
       ></pre>
     </div>
   );

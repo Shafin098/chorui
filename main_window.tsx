@@ -109,9 +109,21 @@ function registerNewFileOpenListener(
         line = line.replaceAll(/\t/g, "    ");
         // cursor should be on first line, so making first line active
         if (index == 0) {
-          return { text: line, active: true, caretPosition: 0 };
+          return {
+            text: line,
+            active: true,
+            caretPosition: 0,
+            selectionStart: -1,
+            selectionEnd: -1,
+          };
         } else {
-          return { text: line, active: false, caretPosition: 0 };
+          return {
+            text: line,
+            active: false,
+            caretPosition: 0,
+            selectionStart: -1,
+            selectionEnd: -1,
+          };
         }
       });
       // creating new tab to insert into tabs array

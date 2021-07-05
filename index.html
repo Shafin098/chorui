@@ -7,7 +7,7 @@
       * {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
+        box-sizing: content-box;
       }
 
       * {
@@ -26,6 +26,18 @@
 
       div::-webkit-scrollbar {
         display: none; /* Safari and Chrome */
+      }
+
+      .line::selection {
+        background: #fbf1c7;
+        color: #282828;
+        text-shadow: none;
+      }
+
+      .line > *::selection {
+        background: #fbf1c7;
+        color: #282828;
+        text-shadow: none;
       }
     </style>
     <title>Chorui</title>
