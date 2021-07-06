@@ -16,7 +16,7 @@ type EditorPropType = {
   updateLines: (lines: LineType[], activeFileName: string) => void;
 };
 
-function Editor(props: EditorPropType) {
+export default function Editor(props: EditorPropType) {
   const lines = props.lines;
 
   useEffect(() => {
@@ -34,11 +34,13 @@ function Editor(props: EditorPropType) {
                 props.lines[i].selectionStart,
                 props.lines[i].selectionEnd
               ) + "\n";
-            //props.lines[i].selectionStart = -1;
-            //props.lines[i].selectionEnd = -1;
           }
         }
+        // this is will only work if selection is top to bottom
+        // TODO: make it also work for bottom to top selection
+        text += window.getSelection()?.toString();
 
+        navigator.clipboard.writeText(text);
         console.log(text);
         props.updateLines([...lines], props.activeFileName);
       }
@@ -244,8 +246,6 @@ function Editor(props: EditorPropType) {
   ): void => {
     lines[lineIndex].selectionStart = selectionStart;
     lines[lineIndex].selectionEnd = selectionEnd;
-    console.log(lineIndex + 1, `start: ${selectionStart} end: ${selectionEnd}`);
-
     lines[lineIndex].active = false;
     props.updateLines([...lines], props.activeFileName);
   };
@@ -358,5 +358,3 @@ function getCaretPosition(): number {
   }
   return 0;
 }
-
-export default Editor;

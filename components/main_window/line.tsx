@@ -59,7 +59,7 @@ export type LinePropType = {
   previousLineInSelection: (lineIndex: number) => boolean;
 };
 
-function Line(props: LinePropType) {
+export default function Line(props: LinePropType) {
   //console.log(props.lineIndex, "rendering line");
 
   const highLightCommentAndString = (htmlString: string): string => {
@@ -84,7 +84,7 @@ function Line(props: LinePropType) {
     while (pointer < htmlString.length) {
       if (pointer >= props.selectionStart && pointer < props.selectionEnd) {
         highlightedString +=
-          `<span style='background:green;'>` +
+          `<span style='background:${color.fg}; color:${color.bg};'>` +
           htmlString.substring(props.selectionStart, props.selectionEnd) +
           "</span>";
         pointer = props.selectionEnd;
@@ -341,21 +341,9 @@ function Line(props: LinePropType) {
         onBlur={(e) => {
           if (props.mouseDown.current) {
             if (props.previousLineInSelection(props.lineIndex - 1)) {
-              console.log(
-                "selected: ",
-                0,
-                props.txt.length,
-                `line: ${lineNumber}`
-              );
               props.handleOnBlur(props.lineIndex, 0, props.txt.length);
             } else {
               const [selectionStart, selectionEnd] = getSelectionRange();
-              console.log(
-                "selected: ",
-                0,
-                props.txt.length,
-                `line: ${lineNumber}`
-              );
               props.handleOnBlur(props.lineIndex, selectionStart, selectionEnd);
             }
           }
@@ -364,5 +352,3 @@ function Line(props: LinePropType) {
     </div>
   );
 }
-
-export default Line;
