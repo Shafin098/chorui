@@ -20,7 +20,8 @@ export default function Editor(props: EditorPropType) {
   const lines = props.lines;
 
   useEffect(() => {
-    const ctrlC_listener = (e: KeyboardEvent) => {
+    // Text copy listener
+    const ctrlcListener = (e: KeyboardEvent) => {
       if (e.key == "c" && e.ctrlKey) {
         let text = "";
 
@@ -42,13 +43,71 @@ export default function Editor(props: EditorPropType) {
 
         navigator.clipboard.writeText(text);
         console.log(text);
-        props.updateLines([...lines], props.activeFileName);
+        props.updateLines([...props.lines], props.activeFileName);
       }
     };
-    window.addEventListener("keydown", ctrlC_listener);
+
+    // Text cut listener
+    const ctrlxListener = (e: KeyboardEvent) => {
+      if (e.key == "x" && e.ctrlKey) {
+        let linesToDelete: number[] = [];
+        let text = "";
+        for (let i = 0; i < props.lines.length; i++) {
+          if (
+            props.lines[i].selectionStart > -1 &&
+            props.lines[i].selectionEnd > -1
+          ) {
+            text +=
+              props.lines[i].text.substring(
+                props.lines[i].selectionStart,
+                props.lines[i].selectionEnd
+              ) + "\n";
+
+            const selectionLength =
+              props.lines[i].selectionEnd - props.lines[i].selectionStart;
+
+            if (props.lines[i].text.length === selectionLength) {
+              linesToDelete.push(i);
+            } else {
+              props.lines[i].text = props.lines[i].text.substring(
+                0,
+                props.lines[i].selectionStart
+              );
+            }
+          }
+        }
+        // this is will only work if selection is top to bottom
+        // TODO: make it also work for bottom to top selection
+        const selection = window.getSelection();
+        if (selection) {
+          const lastSelectedText = selection.toString();
+          text += lastSelectedText;
+
+          for (let i = 0; i < props.lines.length; i++) {
+            if (props.lines[i].active) {
+              props.lines[i].text = props.lines[i].text.substring(
+                lastSelectedText.length,
+                props.lines[i].text.length
+              );
+              break;
+            }
+          }
+        }
+        navigator.clipboard.writeText(text);
+        console.log(text);
+        props.updateLines(
+          props.lines.filter((line, i) => !linesToDelete.includes(i)),
+          props.activeFileName
+        );
+      }
+    };
+
+    window.addEventListener("keydown", ctrlcListener);
+    window.addEventListener("keydown", ctrlxListener);
 
     return () => {
-      window.removeEventListener("keydown", ctrlC_listener);
+      window.removeEventListener("keydown", ctrlcListener);
+      window.addEventListener("keydown", ctrlxListener);
     };
   });
 
