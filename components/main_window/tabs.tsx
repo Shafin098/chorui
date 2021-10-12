@@ -1,18 +1,21 @@
 import React, { CSSProperties } from "react";
 import Tab from "./tab";
 import { TabType } from "../../main_window";
+import { color } from "./util/color";
 
 const tabsStyle: CSSProperties = {
   overflow: "scroll",
   overflowY: "hidden",
   display: "flex",
   flexDirection: "row",
+  background: color.bg1,
 };
 
 type TabsPropType = {
   tabs: TabType[];
   changeActiveTab: (filePath: string) => void;
   closeTab: (filePath: string) => void;
+  runCallback: () => void;
 };
 
 function Tabs(props: TabsPropType) {
@@ -24,6 +27,7 @@ function Tabs(props: TabsPropType) {
         key={tab.filePath}
         active={tab.active}
         filePath={tab.filePath}
+        runCallback={props.runCallback}
       />
     );
   });

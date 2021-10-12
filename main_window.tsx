@@ -77,11 +77,11 @@ function EditorWindow() {
   } else {
     return (
       <div style={editorWindowStyle}>
-        <button onClick={sendActiveFilePath}>Run</button>
         <Tabs
           tabs={tabs}
           changeActiveTab={changeActiveTab}
           closeTab={closeTab}
+          runCallback={sendActiveFilePath}
         />
         <Editor
           lines={activeTab.lines}
