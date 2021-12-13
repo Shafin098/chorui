@@ -1,17 +1,31 @@
 import fs from "fs";
-import { randomUUID } from "crypto";
 import React, { CSSProperties, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ipcRenderer } from "electron";
 import Editor from "./components/main_window/editor";
 import Tabs from "./components/main_window/tabs";
 import { LineType } from "./components/main_window/line";
+import { color } from "./components/main_window/util/color";
 
 const editorWindowStyle: CSSProperties = {
   width: "100%",
   height: "100%",
   display: "flex",
   flexDirection: "column",
+};
+
+const welcomeScreenStyle: CSSProperties = {
+  width: "100%",
+  height: "100%",
+  backgroundColor: color.bg,
+  color: color.fg,
+  fontFamily: "monospace",
+  fontSize: "1.2rem",
+  fontWeight: "bold",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
 };
 
 export type TabType = {
@@ -75,7 +89,18 @@ function EditorWindow() {
 
   const activeTab = tabs.filter((tab) => tab.active)[0];
   if (activeTab == undefined) {
-    return <div>Open a file by pressing Ctrl+O</div>;
+    return (
+      <div style={welcomeScreenStyle}>
+        <p>
+          Open a file by pressing{" "}
+          <code style={{ color: color.gray }}>Ctrl+O</code>
+        </p>
+        <p>
+          Or create a new file by pressing{" "}
+          <code style={{ color: color.gray }}>Ctrl+N</code>
+        </p>
+      </div>
+    );
   } else {
     return (
       <div style={editorWindowStyle}>
