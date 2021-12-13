@@ -14,12 +14,18 @@ function createWindow() {
       contextIsolation: false,
     },
   });
+
   win.loadFile("index.html");
 
   const menu = Menu.buildFromTemplate([
     {
       label: "File",
       submenu: [
+        {
+          label: "New File",
+          accelerator: "CommandOrControl+N",
+          click: () => newFileDialog(win),
+        },
         {
           label: "Open",
           accelerator: "CommandOrControl+O",
@@ -33,8 +39,18 @@ function createWindow() {
       ],
     },
   ]);
+
   win.setMenu(menu);
   win.webContents.openDevTools();
+
+  ipcMain.on("open-save-as", (_, fileContent) => {
+    const filePath = dialog.showSaveDialogSync({ title: "Save new file as" });
+
+    if (filePath !== undefined) {
+      fs.writeFileSync(filePath, fileContent);
+      win.webContents.send("new-file-created", filePath);
+    }
+  });
 }
 
 app.whenReady().then(() => {
@@ -96,13 +112,20 @@ function openOutPutWindow(srcPath) {
   });
 }
 
+function newFileDialog(browserWin) {
+  // no new file is created on disk
+  // empty fileContect and empty filePath should be assumed
+  // as a newly created unnamed file
+  browserWin.webContents.send("open-file", "", "");
+}
+
 function openFileDialog(browserWin) {
   let openedFiles = dialog.showOpenDialogSync(browserWin, {
     properties: ["openFile"],
   });
   const filePath = openedFiles[0];
   const fileContent = fs.readFileSync(filePath, { encoding: "utf8" });
-  browserWin.webContents.send("new-file", fileContent, filePath);
+  browserWin.webContents.send("open-file", fileContent, filePath);
 }
 
 // Sends save-file event to renderer process

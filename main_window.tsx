@@ -1,4 +1,5 @@
 import fs from "fs";
+import { randomUUID } from "crypto";
 import React, { CSSProperties, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { ipcRenderer } from "electron";
@@ -25,6 +26,7 @@ function EditorWindow() {
   useEffect(() => {
     registerNewFileOpenListener(tabs, setTabs);
     registerFileSavedListener(tabs);
+    registerFileCreatedListener(tabs, setTabs);
 
     // removing all listeners
     return unregisterAllListeners;
@@ -101,7 +103,7 @@ function registerNewFileOpenListener(
 ): void {
   // when main process opens a new file "new-file" event is sent
   ipcRenderer.on(
-    "new-file",
+    "open-file",
     (_: any, fileContent: string, filePath: string) => {
       // converting file content to Tab object
       const lines = fileContent.split(/\r?\n/).map((line, index) => {
@@ -136,10 +138,30 @@ function registerNewFileOpenListener(
       for (let i = 0; i < tabs.length; i++) {
         tabs[i].active = false;
       }
+
+      if (fileContent == "" && filePath == "") {
+        newTab.filePath = "*unnamed";
+      }
+
       tabs.push(newTab);
       setTabs([...tabs]);
     }
   );
+}
+
+function registerFileCreatedListener(
+  tabs: TabType[],
+  setTabs: React.Dispatch<React.SetStateAction<TabType[]>>
+) {
+  ipcRenderer.on("new-file-created", (_, filePath: string) => {
+    for (let tab of tabs) {
+      if (tab.active === true && tab.filePath === "*unnamed") {
+        tab.filePath = filePath;
+        setTabs([...tabs]);
+        break;
+      }
+    }
+  });
 }
 
 function registerFileSavedListener(tabs: TabType[]): void {
@@ -155,7 +177,16 @@ function registerFileSavedListener(tabs: TabType[]): void {
             concatedLines += "\n" + line.text;
           }
         }
-        fs.writeFileSync(tab.filePath, concatedLines);
+
+        if (tab.filePath == "*unnamed") {
+          ipcRenderer.send(
+            "open-save-as",
+            tab.lines.map((l) => l.text).join("\n")
+          );
+        } else {
+          fs.writeFileSync(tab.filePath, concatedLines);
+        }
+
         break;
       }
     }
@@ -163,6 +194,7 @@ function registerFileSavedListener(tabs: TabType[]): void {
 }
 
 function unregisterAllListeners() {
-  ipcRenderer.removeAllListeners("new-file");
+  ipcRenderer.removeAllListeners("open-file");
   ipcRenderer.removeAllListeners("save-file");
+  ipcRenderer.removeAllListeners("new-file-created");
 }
