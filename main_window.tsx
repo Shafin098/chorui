@@ -91,14 +91,12 @@ function EditorWindow() {
   if (activeTab == undefined) {
     return (
       <div style={welcomeScreenStyle}>
-        <p>
-          Open a file by pressing{" "}
-          <code style={{ color: color.gray }}>Ctrl+O</code>
-        </p>
-        <p>
-          Or create a new file by pressing{" "}
-          <code style={{ color: color.gray }}>Ctrl+N</code>
-        </p>
+        <div style={{ marginBottom: "1em" }}>
+          Open a file by pressing <kbd>Ctrl</kbd>+<kbd>O</kbd>
+        </div>
+        <div>
+          Or create a new file by pressing <kbd>Ctrl</kbd>+<kbd>N</kbd>
+        </div>
       </div>
     );
   } else {
